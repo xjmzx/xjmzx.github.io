@@ -19,18 +19,23 @@ export const BitcoinBlockHeight = () => {
     const fetchBlockHeight = async () => {
       try {
         setLoading(true);
-        // Using BlockCypher API as it doesn't require authentication
-        const response = await fetch('https://api.blockcypher.com/v1/btc/main');
+        // Using Blockchain.info API as it has good CORS support and provides block height
+        const response = await fetch('https://blockchain.info/q/latesthash');
         
         if (!response.ok) {
           throw new Error('Failed to fetch block data');
         }
         
-        const data = await response.json();
+        const hash = await response.text();
+        
+        // Get block height
+        const heightResponse = await fetch('https://blockchain.info/q/getblockcount');
+        const height = await heightResponse.text();
+        
         setBlockData({
-          height: data.height,
-          hash: data.hash,
-          time: new Date(data.time).getTime()
+          height: parseInt(height),
+          hash: hash.trim(),
+          time: Date.now() // Using current time as blockchain.info doesn't provide timestamp in these endpoints
         });
         setError(null);
       } catch (err) {

@@ -2,6 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BitcoinBlockHeight } from "@/components/BitcoinBlockHeight";
 import { NostrPosts } from "@/components/NostrPosts";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Zap, MessageCircle } from "lucide-react";
 
 const Index = () => {
@@ -9,7 +10,10 @@ const Index = () => {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 relative">
+          <div className="absolute top-0 right-0">
+            <ThemeToggle />
+          </div>
           <h1 className="text-4xl font-bold mb-2 text-foreground">Nostr Message Hub</h1>
           <p className="text-xl text-muted-foreground">Bitcoin Network & Nostr Relay Posts</p>
         </div>
