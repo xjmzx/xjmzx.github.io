@@ -52,25 +52,33 @@ export const useNostr = (relays: string[], pubkey: string) => {
       // Initialize relay statuses
       setRelayStatuses(relays.map(url => ({ url, connected: false })));
 
-      // Set up relay connection monitoring
-      relays.forEach(relayUrl => {
-        const relay = pool.ensureRelay(relayUrl);
-        
-        relay.on('connect', () => {
-          console.log(`Connected to ${relayUrl}`);
-          updateRelayStatus(relayUrl, true);
-        });
-        
-        relay.on('error', (error: any) => {
-          console.error(`Error connecting to ${relayUrl}:`, error);
-          updateRelayStatus(relayUrl, false, error.message);
-        });
-        
-        relay.on('disconnect', () => {
-          console.log(`Disconnected from ${relayUrl}`);
-          updateRelayStatus(relayUrl, false);
-        });
+      // Set up relay connections with proper async handling
+      const relayPromises = relays.map(async (relayUrl) => {
+        try {
+          const relay = await pool.ensureRelay(relayUrl);
+          
+          relay.on('connect', () => {
+            console.log(`Connected to ${relayUrl}`);
+            updateRelayStatus(relayUrl, true);
+          });
+          
+          relay.on('error', (error: any) => {
+            console.error(`Error connecting to ${relayUrl}:`, error);
+            updateRelayStatus(relayUrl, false, error.message);
+          });
+          
+          relay.on('disconnect', () => {
+            console.log(`Disconnected from ${relayUrl}`);
+            updateRelayStatus(relayUrl, false);
+          });
+        } catch (error) {
+          console.error(`Failed to connect to ${relayUrl}:`, error);
+          updateRelayStatus(relayUrl, false, error instanceof Error ? error.message : 'Connection failed');
+        }
       });
+
+      // Wait for all relay connections to be attempted
+      await Promise.allSettled(relayPromises);
 
       // Fetch posts (kind 1 events)
       const events = await pool.querySync(relays, {
