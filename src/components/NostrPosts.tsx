@@ -1,94 +1,25 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { NostrPost } from "@/components/NostrPost";
-import { RefreshCw, Wifi } from "lucide-react";
+import { NostrConfig } from "@/components/NostrConfig";
+import { useNostr } from "@/hooks/useNostr";
+import { RefreshCw, Wifi, WifiOff, AlertCircle } from "lucide-react";
 
-interface NostrEvent {
-  id: string;
-  pubkey: string;
-  created_at: number;
-  kind: number;
-  content: string;
-  tags: string[][];
-}
-
-const NOSTR_RELAYS = [
+const DEFAULT_RELAYS = [
   'wss://relay.damus.io',
   'wss://nostr-pub.wellorder.net',
   'wss://relay.current.fyi'
 ];
 
 export const NostrPosts = () => {
-  const [posts, setPosts] = useState<NostrEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [connectedRelays, setConnectedRelays] = useState<string[]>([]);
-
-  const connectToRelays = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Mock data for demonstration since WebSocket connections to Nostr relays
-      // would require more complex implementation
-      const mockPosts: NostrEvent[] = [
-        {
-          id: '1',
-          pubkey: 'npub1234567890abcdef',
-          created_at: Date.now() - 300000,
-          kind: 1,
-          content: 'Just set up my Lightning node! ⚡ The future of payments is here. #Bitcoin #Lightning',
-          tags: [['t', 'bitcoin'], ['t', 'lightning']]
-        },
-        {
-          id: '2',
-          pubkey: 'npub0987654321fedcba',
-          created_at: Date.now() - 600000,
-          kind: 1,
-          content: 'Nostr is revolutionizing social media. Decentralized, censorship-resistant, and user-controlled. This is the way! 🚀',
-          tags: [['t', 'nostr'], ['t', 'decentralization']]
-        },
-        {
-          id: '3',
-          pubkey: 'npub1111222233334444',
-          created_at: Date.now() - 900000,
-          kind: 1,
-          content: 'Block height just hit a new milestone! The Bitcoin network continues to grow stronger every day. 💪 #BitcoinNetwork',
-          tags: [['t', 'bitcoin'], ['t', 'blockchain']]
-        },
-        {
-          id: '4',
-          pubkey: 'npub5555666677778888',
-          created_at: Date.now() - 1200000,
-          kind: 1,
-          content: 'Learning about cryptographic signatures and how they secure our digital communications. Mind blown! 🤯 #Cryptography',
-          tags: [['t', 'cryptography'], ['t', 'security']]
-        }
-      ];
-
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setPosts(mockPosts);
-      setConnectedRelays(['relay.damus.io', 'relay.current.fyi']);
-    } catch (err) {
-      setError('Failed to connect to Nostr relays');
-      console.error('Error connecting to relays:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    connectToRelays();
-  }, []);
-
-  const handleRefresh = () => {
-    connectToRelays();
-  };
+  const [relays, setRelays] = useState<string[]>(DEFAULT_RELAYS);
+  const [pubkey, setPubkey] = useState<string>('');
+  
+  const { posts, loading, relayStatuses, refresh, connectedRelays } = useNostr(relays, pubkey);
 
   if (loading) {
     return (
@@ -110,28 +41,76 @@ export const NostrPosts = () => {
 
   return (
     <div className="space-y-4">
-      {/* Header with refresh and connection status */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Wifi className="h-4 w-4" />
-          <span>Connected to {connectedRelays.length} relays</span>
+      {/* Header with connection status and controls */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-sm">
+            {connectedRelays > 0 ? (
+              <Wifi className="h-4 w-4 text-green-500" />
+            ) : (
+              <WifiOff className="h-4 w-4 text-red-500" />
+            )}
+            <span className="text-muted-foreground">
+              Connected to {connectedRelays}/{relays.length} relays
+            </span>
+          </div>
+          
+          {/* Relay status badges */}
+          <div className="flex gap-1">
+            {relayStatuses.map((relay) => (
+              <Badge
+                key={relay.url}
+                variant={relay.connected ? "default" : "destructive"}
+                className="text-xs"
+                title={relay.error || relay.url}
+              >
+                {relay.url.replace('wss://', '').split('.')[0]}
+              </Badge>
+            ))}
+          </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={loading}
-        >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
+        
+        <div className="flex gap-2">
+          <NostrConfig
+            relays={relays}
+            onRelaysChange={setRelays}
+            pubkey={pubkey}
+            onPubkeyChange={setPubkey}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={refresh}
+            disabled={loading}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      {/* Posts */}
-      {error ? (
+      {/* Content */}
+      {!pubkey ? (
         <Card>
           <CardContent className="p-6 text-center">
-            <p className="text-destructive">{error}</p>
+            <AlertCircle className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
+            <p className="text-muted-foreground mb-3">
+              Configure your public key to see your Nostr posts
+            </p>
+            <NostrConfig
+              relays={relays}
+              onRelaysChange={setRelays}
+              pubkey={pubkey}
+              onPubkeyChange={setPubkey}
+            />
+          </CardContent>
+        </Card>
+      ) : posts.length === 0 ? (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p className="text-muted-foreground">
+              No posts found. Make sure your public key is correct and you're connected to relays.
+            </p>
           </CardContent>
         </Card>
       ) : (
