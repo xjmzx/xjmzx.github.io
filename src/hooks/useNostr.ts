@@ -33,6 +33,18 @@ export const useNostr = (relays: string[], pubkey: string) => {
     });
   }, []);
 
+  const testRelayConnection = async (relayUrl: string): Promise<boolean> => {
+    try {
+      // Try to get relay connection
+      const relay = await pool.ensureRelay(relayUrl);
+      console.log(`Successfully connected to ${relayUrl}`);
+      return true;
+    } catch (error) {
+      console.error(`Failed to connect to ${relayUrl}:`, error);
+      return false;
+    }
+  };
+
   const fetchPosts = useCallback(async () => {
     if (!pubkey || relays.length === 0) return;
 
@@ -52,36 +64,31 @@ export const useNostr = (relays: string[], pubkey: string) => {
       // Initialize relay statuses
       setRelayStatuses(relays.map(url => ({ url, connected: false })));
 
-      // Set up relay connections with proper async handling
-      const relayPromises = relays.map(async (relayUrl) => {
-        try {
-          const relay = await pool.ensureRelay(relayUrl);
-          
-          relay.on('connect', () => {
-            console.log(`Connected to ${relayUrl}`);
-            updateRelayStatus(relayUrl, true);
-          });
-          
-          relay.on('error', (error: any) => {
-            console.error(`Error connecting to ${relayUrl}:`, error);
-            updateRelayStatus(relayUrl, false, error.message);
-          });
-          
-          relay.on('disconnect', () => {
-            console.log(`Disconnected from ${relayUrl}`);
-            updateRelayStatus(relayUrl, false);
-          });
-        } catch (error) {
-          console.error(`Failed to connect to ${relayUrl}:`, error);
-          updateRelayStatus(relayUrl, false, error instanceof Error ? error.message : 'Connection failed');
-        }
+      // Test relay connections
+      const connectionPromises = relays.map(async (relayUrl) => {
+        const isConnected = await testRelayConnection(relayUrl);
+        updateRelayStatus(relayUrl, isConnected, isConnected ? undefined : 'Connection failed');
+        return { url: relayUrl, connected: isConnected };
       });
 
-      // Wait for all relay connections to be attempted
-      await Promise.allSettled(relayPromises);
+      // Wait for all connection attempts
+      const connectionResults = await Promise.allSettled(connectionPromises);
+      
+      // Get list of working relays
+      const workingRelays = connectionResults
+        .filter((result): result is PromiseFulfilledResult<{url: string, connected: boolean}> => 
+          result.status === 'fulfilled' && result.value.connected)
+        .map(result => result.value.url);
 
-      // Fetch posts (kind 1 events)
-      const events = await pool.querySync(relays, {
+      if (workingRelays.length === 0) {
+        console.log('No working relays found');
+        return;
+      }
+
+      console.log(`Fetching posts from ${workingRelays.length} working relays`);
+
+      // Fetch posts (kind 1 events) from working relays only
+      const events = await pool.querySync(workingRelays, {
         kinds: [1],
         authors: [hexPubkey],
         limit: 20
@@ -99,6 +106,7 @@ export const useNostr = (relays: string[], pubkey: string) => {
         }));
 
       setPosts(sortedEvents);
+      console.log(`Fetched ${sortedEvents.length} posts`);
     } catch (error) {
       console.error('Error fetching Nostr posts:', error);
     } finally {
