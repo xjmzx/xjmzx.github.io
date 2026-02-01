@@ -2,8 +2,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Zap, Bitcoin } from 'lucide-react';
+import { Menu, Zap, Bitcoin, Moon, Sun } from 'lucide-react';
 import { useState } from 'react';
+import { useAppContext } from '@/hooks/useAppContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -32,6 +33,14 @@ const navigation = [
 export function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { config, updateConfig } = useAppContext();
+
+  const toggleTheme = () => {
+    updateConfig((current) => ({
+      ...current,
+      theme: current.theme === 'dark' ? 'light' : 'dark',
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -59,7 +68,7 @@ export function Layout({ children }: LayoutProps) {
             </Link>
           </div>
 
-          <nav className="hidden md:flex ml-auto gap-6">
+          <nav className="hidden md:flex ml-auto gap-6 items-center">
             {navigation.map((item) => (
               <div key={item.name} className="relative group">
                 {item.children ? (
@@ -91,6 +100,20 @@ export function Layout({ children }: LayoutProps) {
                 )}
               </div>
             ))}
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="ml-2"
+              aria-label="Toggle theme"
+            >
+              {config.theme === 'dark' ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
+            </Button>
           </nav>
         </div>
       </header>
@@ -117,6 +140,15 @@ export function Layout({ children }: LayoutProps) {
 }
 
 function MobileNav({ onNavigate }: { onNavigate: () => void }) {
+  const { config, updateConfig } = useAppContext();
+
+  const toggleTheme = () => {
+    updateConfig((current) => ({
+      ...current,
+      theme: current.theme === 'dark' ? 'light' : 'dark',
+    }));
+  };
+
   return (
     <ScrollArea className="h-full">
       <div className="flex flex-col gap-2 p-4">
@@ -149,6 +181,27 @@ function MobileNav({ onNavigate }: { onNavigate: () => void }) {
             )}
           </div>
         ))}
+        
+        <div className="mt-4 pt-4 border-t">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleTheme}
+            className="w-full justify-start"
+          >
+            {config.theme === 'dark' ? (
+              <>
+                <Sun className="h-4 w-4 mr-2" />
+                Light Mode
+              </>
+            ) : (
+              <>
+                <Moon className="h-4 w-4 mr-2" />
+                Dark Mode
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </ScrollArea>
   );
