@@ -103,17 +103,44 @@ Reference configurations included for:
 
 ## 🌐 Deployment
 
-This site is built with static HTML/CSS/JS and can be deployed to:
-- GitHub Pages
+This site is deployed to **GitHub Pages** at [ln.fizx.uk](https://ln.fizx.uk)
+
+### Automatic Deployment
+
+The site automatically deploys when you push to the `main` branch:
+
+1. **Push to main branch** - GitHub Actions will automatically build and deploy
+2. **Wait ~1-2 minutes** - The workflow builds the site and deploys to GitHub Pages
+3. **Visit ln.fizx.uk** - Your changes are live!
+
+### GitHub Pages Setup
+
+Required configuration (already done):
+
+1. ✅ Repository name: `xjmzx.github.io`
+2. ✅ Custom domain: `ln.fizx.uk` (set in repository settings)
+3. ✅ CNAME record in DNS pointing to `xjmzx.github.io`
+4. ✅ CNAME file in `/public/CNAME`
+5. ✅ GitHub Actions workflow in `.github/workflows/deploy.yml`
+
+### Manual Deployment
+
+If you need to deploy manually:
+
+```bash
+# Build the project
+npm run build
+
+# The dist folder is ready to deploy
+# GitHub Actions will handle deployment automatically
+```
+
+### Alternative Hosting
+
+The site can also be deployed to:
 - Netlify
 - Vercel
 - Any static hosting service
-
-### GitHub Pages Deployment
-
-1. Build the project: `npm run build`
-2. Deploy the `dist` folder to your `gh-pages` branch
-3. Configure custom domain (ln.fizx.uk) in repository settings
 
 ## 📄 License
 
