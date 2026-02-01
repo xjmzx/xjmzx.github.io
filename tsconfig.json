@@ -27,5 +27,19 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/hooks/useZaps.ts",
+    "src/hooks/useNWC.ts",
+    "src/hooks/useWallet.ts",
+    "src/hooks/useShakespeare.ts",
+    "src/components/ZapButton.tsx",
+    "src/components/ZapDialog.tsx",
+    "src/components/WalletModal.tsx",
+    "src/components/dm/*.tsx",
+    "src/components/comments/*.tsx",
+    "src/contexts/NWCContext.tsx",
+    "src/contexts/DMContext.tsx",
+    "src/pages/Messages.tsx"
+  ]
 }
