@@ -1,8 +1,10 @@
 import { useSeoMeta } from '@unhead/react';
 import { useState } from 'react';
-import { TrendingUp, Activity, BarChart3, Filter, Search, RefreshCw } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, Filter, Search, RefreshCw, Settings as SettingsIcon, Radio, Hash, Plus, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useMarketEventsWithReactions, MARKET_ASSETS } from '@/hooks/useMarketEvents';
 import { useMarketStats, getSentimentLabel, getSentimentColor, getSentimentBgColor } from '@/hooks/useMarketStats';
+import { useKeywordMatching, useRelayStats, DEFAULT_KEYWORDS, type KeywordConfig } from '@/hooks/useKeywordMatching';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +18,7 @@ import { useAuthor } from '@/hooks/useAuthor';
 import { genUserName } from '@/lib/genUserName';
 import type { MarketEventWithReactions } from '@/hooks/useMarketEvents';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Progress } from '@/components/ui/progress';
 
 const Index = () => {
   useSeoMeta({
@@ -23,9 +26,13 @@ const Index = () => {
     description: 'Track market sentiment across crypto, stocks, commodities, and forex using real-time data from the Nostr network.',
   });
 
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [limit, setLimit] = useState(100);
+  const [customHashtags, setCustomHashtags] = useState<string[]>([]);
+  const [newHashtag, setNewHashtag] = useState('');
+  const [keywordConfigs, setKeywordConfigs] = useState<KeywordConfig[]>(DEFAULT_KEYWORDS);
 
   // Get selected assets based on category
   const selectedAssets = selectedCategory === 'all' 
@@ -34,6 +41,8 @@ const Index = () => {
 
   const { data: events, isLoading, refetch, isFetching } = useMarketEventsWithReactions(selectedAssets, limit);
   const stats = useMarketStats(events);
+  const keywordMatches = useKeywordMatching(events, keywordConfigs);
+  const relayStats = useRelayStats(events);
 
   // Filter events by search query
   const filteredEvents = events?.filter(event => {
@@ -45,6 +54,29 @@ const Index = () => {
       event.asset?.symbol.toLowerCase().includes(query)
     );
   });
+
+  const addCustomHashtag = () => {
+    if (newHashtag && !customHashtags.includes(newHashtag.toLowerCase())) {
+      const hashtag = newHashtag.toLowerCase().replace(/^#/, '');
+      setCustomHashtags([...customHashtags, hashtag]);
+      
+      // Add to keyword configs
+      const customConfig: KeywordConfig = {
+        id: `custom-${hashtag}`,
+        label: `#${hashtag}`,
+        hashtags: [hashtag],
+        keywords: [hashtag],
+        enabled: true,
+      };
+      setKeywordConfigs([...keywordConfigs, customConfig]);
+      setNewHashtag('');
+    }
+  };
+
+  const removeCustomHashtag = (hashtag: string) => {
+    setCustomHashtags(customHashtags.filter(h => h !== hashtag));
+    setKeywordConfigs(keywordConfigs.filter(k => k.id !== `custom-${hashtag}`));
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950">
@@ -64,6 +96,15 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/settings')}
+                className="gap-2"
+              >
+                <SettingsIcon className="h-4 w-4" />
+                Settings
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -126,6 +167,47 @@ const Index = () => {
           </Card>
         </div>
 
+        {/* Custom Hashtags */}
+        <Card className="border-0 shadow-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur mb-8">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Hash className="h-5 w-5" />
+              <CardTitle>Custom Hashtags</CardTitle>
+            </div>
+            <CardDescription>Add custom hashtags to track specific topics</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2 mb-4">
+              <Input
+                placeholder="Enter hashtag (e.g., nostr, freedom)"
+                value={newHashtag}
+                onChange={(e) => setNewHashtag(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addCustomHashtag()}
+                className="flex-1"
+              />
+              <Button onClick={addCustomHashtag} disabled={!newHashtag}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add
+              </Button>
+            </div>
+            {customHashtags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {customHashtags.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="gap-2">
+                    #{tag}
+                    <button
+                      onClick={() => removeCustomHashtag(tag)}
+                      className="hover:text-destructive transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Filters and Search */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="flex-1 relative">
@@ -168,6 +250,8 @@ const Index = () => {
           <TabsList className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
             <TabsTrigger value="feed">Live Feed</TabsTrigger>
             <TabsTrigger value="assets">Asset Analysis</TabsTrigger>
+            <TabsTrigger value="keywords">Keyword Matches</TabsTrigger>
+            <TabsTrigger value="relays">Relay Stats</TabsTrigger>
             <TabsTrigger value="trending">Trending</TabsTrigger>
           </TabsList>
 
@@ -237,6 +321,97 @@ const Index = () => {
                   ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* Keyword Matches */}
+          <TabsContent value="keywords" className="space-y-4">
+            {isLoading ? (
+              <LoadingState />
+            ) : (
+              <div className="grid gap-4">
+                {keywordMatches.map((match) => (
+                  <Card key={match.keyword.id} className="border-0 shadow-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-xl">{match.keyword.label}</CardTitle>
+                          <CardDescription>
+                            {match.keyword.hashtags.map(h => `#${h}`).join(', ')}
+                          </CardDescription>
+                        </div>
+                        <Badge variant="secondary" className="text-lg py-1 px-3">
+                          {match.count} events
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div>
+                          <div className="text-sm font-medium mb-2">Relay Distribution</div>
+                          <div className="space-y-2">
+                            {Object.entries(match.relayStats)
+                              .sort(([, a], [, b]) => b - a)
+                              .map(([relay, count]) => (
+                                <div key={relay} className="space-y-1">
+                                  <div className="flex items-center justify-between text-xs">
+                                    <span className="font-mono truncate max-w-xs">{relay}</span>
+                                    <span className="text-muted-foreground">{count} events</span>
+                                  </div>
+                                  <Progress value={(count / match.count) * 100} className="h-1" />
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Relay Stats */}
+          <TabsContent value="relays" className="space-y-4">
+            <Card className="border-0 shadow-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Radio className="h-5 w-5" />
+                  <CardTitle>Relay Statistics</CardTitle>
+                </div>
+                <CardDescription>Event distribution across Nostr relays</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="space-y-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-2 w-full" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {Object.entries(relayStats)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([relay, count]) => (
+                        <div key={relay} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Radio className="h-4 w-4 text-green-500" />
+                              <span className="font-mono text-sm truncate max-w-md">{relay}</span>
+                            </div>
+                            <div className="text-sm font-medium">
+                              {count} events ({((count / (events?.length || 1)) * 100).toFixed(1)}%)
+                            </div>
+                          </div>
+                          <Progress value={(count / (events?.length || 1)) * 100} className="h-2" />
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Trending */}
