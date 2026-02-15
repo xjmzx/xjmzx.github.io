@@ -79,17 +79,17 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-slate-200/50 dark:border-slate-800/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-50">
+      <header className="border-b border-border bg-card/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-white" />
+              <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
+                <TrendingUp className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold text-foreground">
                   Nostr Market Pulse
                 </h1>
                 <p className="text-sm text-muted-foreground">Real-time sentiment from the network</p>
@@ -124,7 +124,7 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card className="border-0 shadow-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur">
+          <Card className="border-0 shadow-lg bg-card backdrop-blur">
             <CardHeader className="pb-3">
               <CardDescription className="flex items-center gap-2">
                 <Activity className="h-4 w-4" />
@@ -134,7 +134,7 @@ const Index = () => {
             </CardHeader>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur">
+          <Card className="border-0 shadow-lg bg-card backdrop-blur">
             <CardHeader className="pb-3">
               <CardDescription className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
@@ -144,7 +144,7 @@ const Index = () => {
             </CardHeader>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur">
+          <Card className="border-0 shadow-lg bg-card backdrop-blur">
             <CardHeader className="pb-3">
               <CardDescription className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
@@ -156,7 +156,7 @@ const Index = () => {
             </CardHeader>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur">
+          <Card className="border-0 shadow-lg bg-card backdrop-blur">
             <CardHeader className="pb-3">
               <CardDescription className="flex items-center gap-2">
                 <Filter className="h-4 w-4" />
@@ -297,23 +297,23 @@ const Index = () => {
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                           <div>
                             <div className="text-sm text-muted-foreground">Events</div>
-                            <div className="text-2xl font-bold">{assetStat.eventCount}</div>
+                            <div className="text-2xl font-bold text-foreground">{assetStat.eventCount}</div>
                           </div>
                           <div>
                             <div className="text-sm text-muted-foreground">Reactions</div>
-                            <div className="text-2xl font-bold">{assetStat.totalReactions}</div>
+                            <div className="text-2xl font-bold text-foreground">{assetStat.totalReactions}</div>
                           </div>
                           <div>
                             <div className="text-sm text-muted-foreground">Positive</div>
-                            <div className="text-2xl font-bold text-green-600">{assetStat.positiveReactions}</div>
+                            <div className="text-2xl font-bold text-foreground">{assetStat.positiveReactions}</div>
                           </div>
                           <div>
                             <div className="text-sm text-muted-foreground">Negative</div>
-                            <div className="text-2xl font-bold text-red-600">{assetStat.negativeReactions}</div>
+                            <div className="text-2xl font-bold text-foreground">{assetStat.negativeReactions}</div>
                           </div>
                           <div>
                             <div className="text-sm text-muted-foreground">Recent</div>
-                            <div className="text-2xl font-bold text-blue-600">{assetStat.recentActivity}</div>
+                            <div className="text-2xl font-bold text-foreground">{assetStat.recentActivity}</div>
                           </div>
                         </div>
                       </CardContent>
@@ -372,7 +372,7 @@ const Index = () => {
 
           {/* Relay Stats */}
           <TabsContent value="relays" className="space-y-4">
-            <Card className="border-0 shadow-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur">
+            <Card className="border-0 shadow-lg bg-card backdrop-blur">
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Radio className="h-5 w-5" />
@@ -416,7 +416,7 @@ const Index = () => {
 
           {/* Trending */}
           <TabsContent value="trending" className="space-y-4">
-            <Card className="border-0 shadow-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur">
+            <Card className="border-0 shadow-lg bg-card backdrop-blur">
               <CardHeader>
                 <CardTitle>Trending Hashtags</CardTitle>
                 <CardDescription>Most mentioned topics across all events</CardDescription>
@@ -436,11 +436,11 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200/50 dark:border-slate-800/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl mt-16">
+      <footer className="border-t border-border bg-card/80 backdrop-blur-xl mt-16">
         <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
           <p>
             Powered by Nostr •{' '}
-            <a href="https://shakespeare.diy" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+            <a href="https://shakespeare.diy" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
               Vibed with Shakespeare
             </a>
           </p>
@@ -457,7 +457,7 @@ function EventCard({ event }: { event: MarketEventWithReactions }) {
   const profileImage = metadata?.picture;
 
   return (
-    <Card className="border-0 shadow-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur hover:shadow-xl transition-all">
+    <Card className="border-0 shadow-lg bg-card backdrop-blur hover:shadow-xl transition-all">
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -489,40 +489,10 @@ function EventCard({ event }: { event: MarketEventWithReactions }) {
           <NoteContent event={event} className="text-sm" />
         </div>
 
-        {/* Sentiment Bar */}
+        {/* Simple Reactions Counter */}
         {event.reactions.total > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>{event.reactions.total} reactions</span>
-              <span className={getSentimentColor(event.reactions.sentiment)}>
-                {getSentimentLabel(event.reactions.sentiment)}
-              </span>
-            </div>
-            <div className="h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden flex">
-              {event.reactions.positive > 0 && (
-                <div 
-                  className="bg-green-500 h-full" 
-                  style={{ width: `${(event.reactions.positive / event.reactions.total) * 100}%` }}
-                />
-              )}
-              {event.reactions.neutral > 0 && (
-                <div 
-                  className="bg-gray-400 h-full" 
-                  style={{ width: `${(event.reactions.neutral / event.reactions.total) * 100}%` }}
-                />
-              )}
-              {event.reactions.negative > 0 && (
-                <div 
-                  className="bg-red-500 h-full" 
-                  style={{ width: `${(event.reactions.negative / event.reactions.total) * 100}%` }}
-                />
-              )}
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-green-600">👍 {event.reactions.positive}</span>
-              <span className="text-gray-600">Neutral {event.reactions.neutral}</span>
-              <span className="text-red-600">👎 {event.reactions.negative}</span>
-            </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground border-t border-border pt-3">
+            <span className="font-medium">{event.reactions.total} reactions</span>
           </div>
         )}
       </CardContent>

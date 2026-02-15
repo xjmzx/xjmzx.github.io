@@ -1,6 +1,9 @@
 import { useNostr } from '@nostrify/react';
 import { useQuery } from '@tanstack/react-query';
 import type { NostrEvent } from '@nostrify/nostrify';
+import { nip19 } from 'nostr-tools';
+import { useFollowList } from './useFollowList';
+import { useCurrentUser } from './useCurrentUser';
 
 export interface MarketAsset {
   id: string;
@@ -35,6 +38,18 @@ export const MARKET_ASSETS: MarketAsset[] = [
   { id: 'eurusd', name: 'EUR/USD', symbol: 'EUR/USD', hashtags: ['eurusd', 'forex', 'euro', 'dollar'], category: 'forex' },
 ];
 
+// Moscow Time's pubkey (decoded from npub)
+const MOSCOW_TIME_NPUB = 'npub1dww28le88e3sw8nkeqk6jdvnwey8p3qvzcuv5zh2jqp72dkgmhqsnhf7ly';
+let MOSCOW_TIME_PUBKEY = '';
+try {
+  const decoded = nip19.decode(MOSCOW_TIME_NPUB);
+  if (decoded.type === 'npub') {
+    MOSCOW_TIME_PUBKEY = decoded.data;
+  }
+} catch {
+  // If decode fails, leave empty
+}
+
 export interface MarketEventWithReactions extends NostrEvent {
   reactions: {
     total: number;
@@ -51,10 +66,14 @@ export interface MarketEventWithReactions extends NostrEvent {
  */
 export function useMarketEvents(selectedAssets?: string[], limit = 50) {
   const { nostr } = useNostr();
+  const { user } = useCurrentUser();
+  const { data: followList } = useFollowList();
 
   return useQuery({
-    queryKey: ['market-events', selectedAssets, limit],
+    queryKey: ['market-events', selectedAssets, limit, user?.pubkey, followList],
     queryFn: async () => {
+      const twoDaysAgo = Math.floor(Date.now() / 1000) - (2 * 24 * 60 * 60);
+
       // Build hashtag filters based on selected assets
       const assetsToQuery = selectedAssets && selectedAssets.length > 0
         ? MARKET_ASSETS.filter(asset => selectedAssets.includes(asset.id))
@@ -73,20 +92,57 @@ export function useMarketEvents(selectedAssets?: string[], limit = 50) {
 
       const allHashtags = [...hashtags, ...generalHashtags];
 
-      // Query events with these hashtags
-      // Using multiple filters in a single query for efficiency
-      const events = await nostr.query([
-        {
-          kinds: [1], // Short text notes
+      // Build authors list: follow list + Moscow Time
+      const authors: string[] = [];
+      if (followList && followList.length > 0) {
+        authors.push(...followList);
+      }
+      if (MOSCOW_TIME_PUBKEY && !authors.includes(MOSCOW_TIME_PUBKEY)) {
+        authors.push(MOSCOW_TIME_PUBKEY);
+      }
+
+      // Query events with hashtags
+      // If user is logged in and has follows, prioritize followed authors
+      const filters: any[] = [];
+
+      if (authors.length > 0) {
+        // Query from followed authors (including Moscow Time)
+        filters.push({
+          kinds: [1],
+          authors: authors,
           '#t': allHashtags,
+          since: twoDaysAgo,
+          limit: Math.floor(limit * 0.7), // 70% from follows
+        });
+
+        // Also query general events (30%)
+        filters.push({
+          kinds: [1],
+          '#t': allHashtags,
+          since: twoDaysAgo,
+          limit: Math.floor(limit * 0.3),
+        });
+      } else {
+        // No follows, query all events
+        filters.push({
+          kinds: [1],
+          '#t': allHashtags,
+          since: twoDaysAgo,
           limit: limit,
-        }
-      ]);
+        });
+      }
+
+      const events = await nostr.query(filters);
+
+      // Remove duplicates by event id
+      const uniqueEvents = Array.from(
+        new Map(events.map(e => [e.id, e])).values()
+      );
 
       // Sort by created_at descending (newest first)
-      events.sort((a, b) => b.created_at - a.created_at);
+      uniqueEvents.sort((a, b) => b.created_at - a.created_at);
 
-      return events;
+      return uniqueEvents;
     },
     staleTime: 30000, // 30 seconds
     refetchInterval: 60000, // Refetch every minute

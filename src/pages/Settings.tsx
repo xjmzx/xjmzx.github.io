@@ -23,9 +23,9 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-slate-900 dark:to-indigo-950">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-slate-200/50 dark:border-slate-800/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl">
+      <header className="border-b border-border bg-card/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -33,11 +33,11 @@ const Settings = () => {
                 ← Back
               </Button>
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
-                  <SettingsIcon className="h-6 w-6 text-white" />
+                <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
+                  <SettingsIcon className="h-6 w-6 text-primary-foreground" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  <h1 className="text-2xl font-bold text-foreground">
                     Settings
                   </h1>
                   <p className="text-sm text-muted-foreground">Manage your preferences</p>
@@ -52,7 +52,7 @@ const Settings = () => {
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-6">
           {/* Theme Settings */}
-          <Card className="border-0 shadow-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur">
+          <Card className="border-0 shadow-lg bg-card backdrop-blur">
             <CardHeader>
               <div className="flex items-center gap-2">
                 {config.theme === 'dark' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
@@ -86,7 +86,7 @@ const Settings = () => {
           </Card>
 
           {/* Relay Configuration */}
-          <Card className="border-0 shadow-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur">
+          <Card className="border-0 shadow-lg bg-card backdrop-blur">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Radio className="h-5 w-5" />
@@ -113,7 +113,7 @@ const Settings = () => {
           </Card>
 
           {/* Current Relays Info */}
-          <Card className="border-0 shadow-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur">
+          <Card className="border-0 shadow-lg bg-card backdrop-blur">
             <CardHeader>
               <CardTitle>Active Relays</CardTitle>
               <CardDescription>Currently connected relays for reading market data</CardDescription>
