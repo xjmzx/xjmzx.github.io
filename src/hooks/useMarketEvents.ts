@@ -53,6 +53,13 @@ try {
 // Spam filter - exclude these hashtags
 const SPAM_HASHTAGS = ['defi', 'crypto', 'blockchain'];
 
+// Required keywords whitelist - event MUST contain at least one of these
+const REQUIRED_KEYWORDS = [
+  'bitcoin', 'block', 'square', 'btc', 'oil', 'gas', 
+  'metals', 'lightning', 'ln', 'finance', 'commodities', 
+  'equities', 'global-markets', 'globalmarkets'
+];
+
 /**
  * Check if event contains spam hashtags
  */
@@ -62,6 +69,22 @@ function isSpamEvent(event: NostrEvent): boolean {
     .map(([, value]) => value.toLowerCase());
   
   return SPAM_HASHTAGS.some(spam => eventHashtags.includes(spam));
+}
+
+/**
+ * Check if event contains at least one required keyword
+ */
+function hasRequiredKeyword(event: NostrEvent): boolean {
+  const eventHashtags = event.tags
+    .filter(([name]) => name === 't')
+    .map(([, value]) => value.toLowerCase());
+  
+  const contentLower = event.content.toLowerCase();
+  
+  // Check hashtags OR content for required keywords
+  return REQUIRED_KEYWORDS.some(keyword => 
+    eventHashtags.includes(keyword) || contentLower.includes(keyword)
+  );
 }
 
 export interface MarketEventWithReactions extends NostrEvent {
@@ -93,18 +116,9 @@ export function useMarketEvents(selectedAssets?: string[], limit = 50) {
         ? MARKET_ASSETS.filter(asset => selectedAssets.includes(asset.id))
         : MARKET_ASSETS;
 
-      // Collect all hashtags
-      const hashtags = Array.from(
-        new Set(assetsToQuery.flatMap(asset => asset.hashtags))
-      );
-
-      // Additional general finance hashtags (excluding spam tags)
-      const generalHashtags = [
-        'finance', 'markets', 'trading', 'investing', 'stocks', 
-        'cryptocurrency'
-      ];
-
-      const allHashtags = [...hashtags, ...generalHashtags];
+      // Use required keywords as query hashtags for better targeting
+      // This ensures we only query events that have a chance of passing the filter
+      const allHashtags = [...REQUIRED_KEYWORDS];
 
       // Build authors list: follow list + Moscow Time
       const authors: string[] = [];
@@ -153,8 +167,12 @@ export function useMarketEvents(selectedAssets?: string[], limit = 50) {
         new Map(events.map(e => [e.id, e])).values()
       );
 
-      // Filter out spam events
-      const filteredEvents = uniqueEvents.filter(event => !isSpamEvent(event));
+      // Apply filters:
+      // 1. Must NOT contain spam hashtags
+      // 2. MUST contain at least one required keyword
+      const filteredEvents = uniqueEvents.filter(event => 
+        !isSpamEvent(event) && hasRequiredKeyword(event)
+      );
 
       // Sort by created_at descending (newest first)
       filteredEvents.sort((a, b) => b.created_at - a.created_at);
