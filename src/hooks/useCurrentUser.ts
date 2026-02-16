@@ -10,8 +10,8 @@ export function useCurrentUser() {
 
   const loginToUser = useCallback((login: NLoginType): NUser  => {
     switch (login.type) {
-      case 'nsec': // Nostr login with secret key
-        return NUser.fromNsecLogin(login);
+      case 'pubkey': // Read-only login with npub
+        return NUser.fromPubkeyLogin(login);
       case 'bunker': // Nostr login with NIP-46 "bunker://" URI
         return NUser.fromBunkerLogin(login, nostr);
       case 'extension': // Nostr login with NIP-07 browser extension
@@ -40,9 +40,19 @@ export function useCurrentUser() {
   const user = users[0] as NUser | undefined;
   const author = useAuthor(user?.pubkey);
 
+  // Check if user can sign events (not read-only)
+  const canSign = useMemo(() => {
+    if (!user) return false;
+    const login = logins[0];
+    // Only extension and bunker can sign, pubkey is read-only
+    return login && (login.type === 'extension' || login.type === 'bunker');
+  }, [user, logins]);
+
   return {
     user,
     users,
+    canSign,
+    isReadOnly: user && !canSign,
     ...author.data,
   };
 }

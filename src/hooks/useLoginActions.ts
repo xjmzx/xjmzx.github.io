@@ -1,5 +1,6 @@
 import { useNostr } from '@nostrify/react';
 import { NLogin, useNostrLogin } from '@nostrify/react/login';
+import { nip19 } from 'nostr-tools';
 
 // NOTE: This file should not be edited except for adding new login methods.
 
@@ -8,9 +9,14 @@ export function useLoginActions() {
   const { logins, addLogin, removeLogin } = useNostrLogin();
 
   return {
-    // Login with a Nostr secret key
-    nsec(nsec: string): void {
-      const login = NLogin.fromNsec(nsec);
+    // Read-only login with npub (cannot sign events)
+    npub(npub: string): void {
+      const decoded = nip19.decode(npub);
+      if (decoded.type !== 'npub') {
+        throw new Error('Invalid npub format');
+      }
+      const pubkey = decoded.data;
+      const login = NLogin.fromPubkey(pubkey);
       addLogin(login);
     },
     // Login with a NIP-46 "bunker://" URI

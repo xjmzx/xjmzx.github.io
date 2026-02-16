@@ -1,6 +1,6 @@
 import { useSeoMeta } from '@unhead/react';
 import { useState } from 'react';
-import { TrendingUp, Activity, BarChart3, Filter, Search, RefreshCw, Settings as SettingsIcon, Radio, Hash, Plus, X } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, Filter, Search, RefreshCw, Settings as SettingsIcon, Radio, Hash, Plus, X, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useMarketEventsWithReactions, MARKET_ASSETS } from '@/hooks/useMarketEvents';
 import { useMarketStats, getSentimentLabel, getSentimentColor, getSentimentBgColor } from '@/hooks/useMarketStats';
@@ -19,8 +19,11 @@ import { genUserName } from '@/lib/genUserName';
 import type { MarketEventWithReactions } from '@/hooks/useMarketEvents';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Index = () => {
+  const { isReadOnly } = useCurrentUser();
   useSeoMeta({
     title: 'Nostr Market Pulse - Real-time Financial Sentiment from Nostr',
     description: 'Track market sentiment across crypto, stocks, commodities, and forex using real-time data from the Nostr network.',
@@ -122,6 +125,16 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        {/* Read-Only Alert */}
+        {isReadOnly && (
+          <Alert className="mb-6 bg-blue-950/20 border-blue-800">
+            <Eye className="h-4 w-4" />
+            <AlertDescription>
+              You're viewing in <strong>read-only mode</strong>. To post or react to content, log in with a browser extension or remote signer.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card className="border-0 shadow-lg bg-card backdrop-blur">
