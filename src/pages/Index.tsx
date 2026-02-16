@@ -446,6 +446,221 @@ const Index = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Technical Documentation */}
+        <div className="mt-16 space-y-6">
+          <h2 className="text-2xl font-bold text-foreground mb-6">Technical Overview</h2>
+          
+          {/* Frameworks & Technologies */}
+          <Card className="border-0 shadow-lg bg-card backdrop-blur">
+            <CardHeader>
+              <CardTitle>Application Stack</CardTitle>
+              <CardDescription>Technologies powering Nostr Market Pulse</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-sm uppercase text-muted-foreground">Frontend</h3>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <span className="text-muted-foreground">•</span>
+                      <span><strong>React 18.x</strong> - UI framework with hooks and concurrent rendering</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-muted-foreground">•</span>
+                      <span><strong>TypeScript</strong> - Type-safe JavaScript development</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-muted-foreground">•</span>
+                      <span><strong>Vite</strong> - Fast build tool and dev server</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-muted-foreground">•</span>
+                      <span><strong>TailwindCSS 3.x</strong> - Utility-first styling</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-muted-foreground">•</span>
+                      <span><strong>shadcn/ui</strong> - Accessible UI components</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-muted-foreground">•</span>
+                      <span><strong>React Router</strong> - Client-side routing</span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-sm uppercase text-muted-foreground">Nostr Integration</h3>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <span className="text-muted-foreground">•</span>
+                      <span><strong>Nostrify</strong> - Nostr protocol framework</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-muted-foreground">•</span>
+                      <span><strong>TanStack Query</strong> - Data fetching and caching</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-muted-foreground">•</span>
+                      <span><strong>NIP-07</strong> - Browser extension authentication</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-muted-foreground">•</span>
+                      <span><strong>NIP-46</strong> - Remote signer support (bunker://)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-muted-foreground">•</span>
+                      <span><strong>NIP-65</strong> - Relay list metadata</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* VPS Deployment Guide */}
+          <Card className="border-0 shadow-lg bg-card backdrop-blur">
+            <CardHeader>
+              <CardTitle>VPS Deployment Guide</CardTitle>
+              <CardDescription>How to deploy this application on your own server</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="font-semibold">Current Architecture</h3>
+                <p className="text-sm text-muted-foreground">
+                  This application is currently a <strong>static frontend-only app</strong>. It runs entirely in the browser and connects directly to Nostr relays. No backend server is required.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-semibold">Static Deployment (No Backend)</h3>
+                <div className="bg-muted/50 rounded-lg p-4 font-mono text-sm space-y-2">
+                  <div className="text-muted-foreground"># Build the project</div>
+                  <div>npm run build</div>
+                  <div className="text-muted-foreground mt-2"># Deploy dist/ folder to any static host:</div>
+                  <div>- Nginx: Copy to /var/www/html</div>
+                  <div>- Apache: Copy to /var/www/html</div>
+                  <div>- Caddy: Serve dist/ directory</div>
+                  <div className="text-muted-foreground mt-2"># Or use simple HTTP server</div>
+                  <div>npx serve dist -p 3000</div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-semibold">Adding Backend Capabilities</h3>
+                <p className="text-sm text-muted-foreground">
+                  If you want to add server-side features, you have several options:
+                </p>
+                
+                <div className="space-y-4 mt-4">
+                  <div className="border-l-2 border-primary pl-4">
+                    <h4 className="font-semibold text-sm mb-2">Option 1: Cloudflare Workers</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Add edge functions for server-side logic without managing servers.
+                    </p>
+                    <div className="bg-muted/50 rounded-lg p-3 font-mono text-xs space-y-1">
+                      <div className="text-muted-foreground"># Create wrangler.jsonc</div>
+                      <div>&#123;</div>
+                      <div>  "name": "nostr-market-pulse",</div>
+                      <div>  "compatibility_date": "2024-01-01",</div>
+                      <div>  "assets": &#123; "directory": "./dist" &#125;</div>
+                      <div>&#125;</div>
+                      <div className="text-muted-foreground mt-2"># Add worker.ts for APIs</div>
+                      <div className="text-muted-foreground"># Deploy with: npx wrangler deploy</div>
+                    </div>
+                  </div>
+
+                  <div className="border-l-2 border-primary pl-4">
+                    <h4 className="font-semibold text-sm mb-2">Option 2: Traditional VPS (Node.js)</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Run a Node.js server with Express or Fastify for full backend control.
+                    </p>
+                    <div className="bg-muted/50 rounded-lg p-3 font-mono text-xs space-y-1">
+                      <div className="text-muted-foreground"># Install dependencies</div>
+                      <div>npm install express</div>
+                      <div className="text-muted-foreground mt-2"># Create server.js</div>
+                      <div>import express from 'express';</div>
+                      <div>const app = express();</div>
+                      <div>app.use(express.static('dist'));</div>
+                      <div>app.listen(3000);</div>
+                      <div className="text-muted-foreground mt-2"># Run with PM2</div>
+                      <div>pm2 start server.js</div>
+                    </div>
+                  </div>
+
+                  <div className="border-l-2 border-primary pl-4">
+                    <h4 className="font-semibold text-sm mb-2">Option 3: Nginx Reverse Proxy</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Serve static files with Nginx and add API routes.
+                    </p>
+                    <div className="bg-muted/50 rounded-lg p-3 font-mono text-xs space-y-1">
+                      <div className="text-muted-foreground"># /etc/nginx/sites-available/nostr-market-pulse</div>
+                      <div>server &#123;</div>
+                      <div>  listen 80;</div>
+                      <div>  server_name your-domain.com;</div>
+                      <div>  root /var/www/nostr-market-pulse/dist;</div>
+                      <div>  index index.html;</div>
+                      <div>  location / &#123;</div>
+                      <div>    try_files $uri $uri/ /index.html;</div>
+                      <div>  &#125;</div>
+                      <div>&#125;</div>
+                    </div>
+                  </div>
+
+                  <div className="border-l-2 border-primary pl-4">
+                    <h4 className="font-semibold text-sm mb-2">Option 4: Docker Container</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Containerize for easy deployment and portability.
+                    </p>
+                    <div className="bg-muted/50 rounded-lg p-3 font-mono text-xs space-y-1">
+                      <div className="text-muted-foreground"># Dockerfile</div>
+                      <div>FROM nginx:alpine</div>
+                      <div>COPY dist/ /usr/share/nginx/html/</div>
+                      <div>EXPOSE 80</div>
+                      <div className="text-muted-foreground mt-2"># Build and run</div>
+                      <div>docker build -t nostr-market-pulse .</div>
+                      <div>docker run -p 80:80 nostr-market-pulse</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-semibold">Backend Use Cases</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Consider adding a backend if you need:
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <span className="text-muted-foreground">•</span>
+                    <span><strong>Caching Layer</strong> - Cache Nostr events server-side to reduce relay load</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-muted-foreground">•</span>
+                    <span><strong>Advanced Analytics</strong> - Process sentiment data with ML models</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-muted-foreground">•</span>
+                    <span><strong>Historical Data</strong> - Store events for long-term trend analysis</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-muted-foreground">•</span>
+                    <span><strong>Rate Limiting</strong> - Protect against abuse with server-side limits</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-muted-foreground">•</span>
+                    <span><strong>Custom Relay</strong> - Run your own specialized market data relay</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="bg-blue-950/20 border border-blue-800 rounded-lg p-4">
+                <p className="text-xs text-blue-300">
+                  <strong>Note:</strong> The current application works perfectly without a backend. All data comes directly from Nostr relays, making it fully decentralized and requiring zero server costs for basic operation.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </main>
 
       {/* Footer */}
