@@ -50,6 +50,20 @@ try {
   // If decode fails, leave empty
 }
 
+// Spam filter - exclude these hashtags
+const SPAM_HASHTAGS = ['defi', 'crypto', 'blockchain'];
+
+/**
+ * Check if event contains spam hashtags
+ */
+function isSpamEvent(event: NostrEvent): boolean {
+  const eventHashtags = event.tags
+    .filter(([name]) => name === 't')
+    .map(([, value]) => value.toLowerCase());
+  
+  return SPAM_HASHTAGS.some(spam => eventHashtags.includes(spam));
+}
+
 export interface MarketEventWithReactions extends NostrEvent {
   reactions: {
     total: number;
@@ -84,10 +98,10 @@ export function useMarketEvents(selectedAssets?: string[], limit = 50) {
         new Set(assetsToQuery.flatMap(asset => asset.hashtags))
       );
 
-      // Additional general finance hashtags
+      // Additional general finance hashtags (excluding spam tags)
       const generalHashtags = [
         'finance', 'markets', 'trading', 'investing', 'stocks', 
-        'cryptocurrency', 'crypto', 'defi', 'blockchain'
+        'cryptocurrency'
       ];
 
       const allHashtags = [...hashtags, ...generalHashtags];
@@ -139,10 +153,13 @@ export function useMarketEvents(selectedAssets?: string[], limit = 50) {
         new Map(events.map(e => [e.id, e])).values()
       );
 
-      // Sort by created_at descending (newest first)
-      uniqueEvents.sort((a, b) => b.created_at - a.created_at);
+      // Filter out spam events
+      const filteredEvents = uniqueEvents.filter(event => !isSpamEvent(event));
 
-      return uniqueEvents;
+      // Sort by created_at descending (newest first)
+      filteredEvents.sort((a, b) => b.created_at - a.created_at);
+
+      return filteredEvents;
     },
     staleTime: 30000, // 30 seconds
     refetchInterval: 60000, // Refetch every minute
