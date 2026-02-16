@@ -50,6 +50,18 @@ try {
   // If decode fails, leave empty
 }
 
+// Your npub - default to show your content if not logged in
+const YOUR_NPUB = 'npub1e0f808a350rxrhppu4zylzljt3arfpvrrpqdg6ft78xy6u49kq5slf0g92';
+let YOUR_PUBKEY = '';
+try {
+  const decoded = nip19.decode(YOUR_NPUB);
+  if (decoded.type === 'npub') {
+    YOUR_PUBKEY = decoded.data;
+  }
+} catch {
+  // If decode fails, leave empty
+}
+
 // Spam filter - exclude these hashtags
 const SPAM_HASHTAGS = ['defi', 'crypto', 'blockchain'];
 
@@ -120,47 +132,37 @@ export function useMarketEvents(selectedAssets?: string[], limit = 50) {
       // This ensures we only query events that have a chance of passing the filter
       const allHashtags = [...REQUIRED_KEYWORDS];
 
-      // Build authors list: follow list + Moscow Time
+      // Build authors list: follow list + Moscow Time + Your pubkey
       const authors: string[] = [];
-      if (followList && followList.length > 0) {
-        authors.push(...followList);
-      }
-      if (MOSCOW_TIME_PUBKEY && !authors.includes(MOSCOW_TIME_PUBKEY)) {
+      
+      // Always include Moscow Time
+      if (MOSCOW_TIME_PUBKEY) {
         authors.push(MOSCOW_TIME_PUBKEY);
       }
 
-      // Query events with hashtags
-      // If user is logged in and has follows, prioritize followed authors
-      const filters: any[] = [];
-
-      if (authors.length > 0) {
-        // Query from followed authors (including Moscow Time)
-        filters.push({
-          kinds: [1],
-          authors: authors,
-          '#t': allHashtags,
-          since: twoDaysAgo,
-          limit: Math.floor(limit * 0.7), // 70% from follows
-        });
-
-        // Also query general events (30%)
-        filters.push({
-          kinds: [1],
-          '#t': allHashtags,
-          since: twoDaysAgo,
-          limit: Math.floor(limit * 0.3),
+      // If logged in, use follow list
+      if (user && followList && followList.length > 0) {
+        // Add all followed authors
+        followList.forEach(pubkey => {
+          if (!authors.includes(pubkey)) {
+            authors.push(pubkey);
+          }
         });
       } else {
-        // No follows, query all events
-        filters.push({
-          kinds: [1],
-          '#t': allHashtags,
-          since: twoDaysAgo,
-          limit: limit,
-        });
+        // Not logged in - default to YOUR pubkey
+        if (YOUR_PUBKEY && !authors.includes(YOUR_PUBKEY)) {
+          authors.push(YOUR_PUBKEY);
+        }
       }
 
-      const events = await nostr.query(filters);
+      // ONLY query from specific authors (no global queries)
+      // This eliminates all spam from random accounts
+      const events = await nostr.query([{
+        kinds: [1],
+        authors: authors, // CRITICAL: Only from followed authors + Moscow Time + You
+        since: twoDaysAgo,
+        limit: limit,
+      }]);
 
       // Remove duplicates by event id
       const uniqueEvents = Array.from(
