@@ -203,6 +203,47 @@
 				{/each}
 			</div>
 		</div>
+
+		<!-- Explainers -->
+		<div class="w-full max-w-2xl mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+			<!-- NIP-39 -->
+			<div class="rounded-xl border border-purple-500/15 bg-purple-500/5 p-5">
+				<div class="flex items-center gap-2 mb-3">
+					<span class="text-purple-400 text-base">⚡</span>
+					<span class="text-sm font-semibold text-purple-300">Nostr External Identities (NIP-39)</span>
+				</div>
+				<p class="text-xs text-white/45 leading-relaxed">
+					Paste any <code class="text-purple-300/80 font-mono">npub</code> into the search field. The key is decoded from bech32 into a raw hex public key, then broadcast as a metadata request (<code class="text-purple-300/80 font-mono">REQ kind:0</code>) across multiple Nostr relays simultaneously. The first relay to respond returns the user's profile event. We then inspect its <code class="text-purple-300/80 font-mono">i</code> tags for an entry of the form <code class="text-purple-300/80 font-mono">["i", "github:username", ...]</code> — a signed identity claim defined by NIP-39 — and load that GitHub profile directly.
+				</p>
+				<a
+					href="https://github.com/nostr-protocol/nostr/blob/master/nips/39.md"
+					target="_blank"
+					rel="noopener"
+					class="inline-block mt-3 text-xs text-purple-400/50 hover:text-purple-400 transition-colors"
+				>
+					Read NIP-39 spec →
+				</a>
+			</div>
+
+			<!-- Fallback strategy -->
+			<div class="rounded-xl border border-amber-500/15 bg-amber-500/5 p-5">
+				<div class="flex items-center gap-2 mb-3">
+					<span class="text-amber-400 text-base">🔍</span>
+					<span class="text-sm font-semibold text-amber-300">Fallback: website &amp; about fields</span>
+				</div>
+				<p class="text-xs text-white/45 leading-relaxed">
+					NIP-39 GitHub identity claims are not yet widely adopted across Nostr clients. When no <code class="text-amber-300/80 font-mono">i</code> tag is present, we fall back to scanning the profile's metadata JSON for a <code class="text-amber-300/80 font-mono">github</code> field, then look for a <code class="text-amber-300/80 font-mono">github.com/</code> link inside the <code class="text-amber-300/80 font-mono">website</code> and <code class="text-amber-300/80 font-mono">about</code> fields. Many developers informally list their GitHub there, making this a practical bridge until NIP-39 adoption grows.
+				</p>
+				<a
+					href="https://github.com/nostr-protocol/nostr/blob/master/nips/39.md#claim-types"
+					target="_blank"
+					rel="noopener"
+					class="inline-block mt-3 text-xs text-amber-400/50 hover:text-amber-400 transition-colors"
+				>
+					NIP-39 claim types →
+				</a>
+			</div>
+		</div>
 	</section>
 
 	<!-- Featured profile -->
