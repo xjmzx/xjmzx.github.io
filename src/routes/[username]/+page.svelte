@@ -297,3 +297,11 @@
 		</div>
 	{/if}
 </main>
+
+<footer class="text-center pb-8 pt-4">
+	<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/8 text-white/30 text-xs">
+		<span class="text-orange-400/80">✦</span>
+		<a href="https://claude.ai" target="_blank" rel="noopener" class="text-orange-400/70 hover:text-orange-400 transition-colors font-medium">Claude</a>
+		designed, coded, deployed, debugged &amp; vibed this
+	</span>
+</footer>

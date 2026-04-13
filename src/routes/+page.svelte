@@ -310,5 +310,10 @@
 			Open source on GitHub
 		</a>
 		<span>Built with <a href="https://svelte.dev" class="hover:text-white/50 transition-colors">Svelte</a> · Powered by GitHub API &amp; Nostr</span>
+		<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/8 text-white/35 text-xs">
+			<span class="text-orange-400/80">✦</span>
+			<a href="https://claude.ai" target="_blank" rel="noopener" class="text-orange-400/70 hover:text-orange-400 transition-colors font-medium">Claude</a>
+			designed, coded, deployed, debugged &amp; vibed this
+		</span>
 	</footer>
 </main>
