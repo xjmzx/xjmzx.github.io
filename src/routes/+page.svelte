@@ -113,8 +113,65 @@
 
 			<!-- Stats -->
 			<div class="grid grid-cols-3 gap-3">
+			<div class="rounded-2xl border border-white/8 bg-white/3 p-6">
+				<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">Nostr</h2>
+				<div class="flex flex-wrap gap-4 justify-center">
+					<a
+						href="https://gist.githubusercontent.com/xjmzx/2dcedf40a54d41d9af8ae1680f2da9d9"
+						target="_blank"
+						rel="noopener"
+						class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
+					>
+						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+							<path d="M12 0C5.37 0 0 5.37 0 12c0 6.63 5.37 12 12 12s12-5.37 12-12S18.63 0 12 0zm0 22c-5.52 0-10-4.48-10-10S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z"/>
+						</svg>
+						Verify via Gist
+					</a>
+					<span class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-mono text-white/50 text-xs">
+						npub1qythmm8eu0n68
+					</span>
+				</div>
+			</div>
 				<div class="rounded-xl border border-white/8 bg-white/3 p-4 text-center">
+			<div class="rounded-2xl border border-white/8 bg-white/3 p-6">
+				<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">Nostr</h2>
+				<div class="flex flex-wrap gap-4 justify-center">
+					<a
+						href="https://gist.githubusercontent.com/xjmzx/2dcedf40a54d41d9af8ae1680f2da9d9"
+						target="_blank"
+						rel="noopener"
+						class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
+					>
+						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+							<path d="M12 0C5.37 0 0 5.37 0 12c0 6.63 5.37 12 12 12s12-5.37 12-12S18.63 0 12 0zm0 22c-5.52 0-10-4.48-10-10S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z"/>
+						</svg>
+						Verify via Gist
+					</a>
+					<span class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-mono text-white/50 text-xs">
+						npub1qythmm8eu0n68
+					</span>
+				</div>
+			</div>
 					<div class="text-2xl font-bold text-white">{user.public_repos}</div>
+			<div class="rounded-2xl border border-white/8 bg-white/3 p-6">
+				<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">Nostr</h2>
+				<div class="flex flex-wrap gap-4 justify-center">
+					<a
+						href="https://gist.githubusercontent.com/xjmzx/2dcedf40a54d41d9af8ae1680f2da9d9"
+						target="_blank"
+						rel="noopener"
+						class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
+					>
+						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+							<path d="M12 0C5.37 0 0 5.37 0 12c0 6.63 5.37 12 12 12s12-5.37 12-12S18.63 0 12 0zm0 22c-5.52 0-10-4.48-10-10S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z"/>
+						</svg>
+						Verify via Gist
+					</a>
+					<span class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-mono text-white/50 text-xs">
+						npub1qythmm8eu0n68
+					</span>
+				</div>
+			</div>
 					<div class="text-xs text-white/40 mt-1">Repos</div>
 				</div>
 				<div class="rounded-xl border border-white/8 bg-white/3 p-4 text-center">
