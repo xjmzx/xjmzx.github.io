@@ -51,9 +51,9 @@
 
 <main class="min-h-screen flex flex-col">
 	<!-- Nav -->
-	<nav class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+	<nav class="flex items-center justify-between px-6 py-3 border-b border-white/10">
 		<span class="font-bold text-lg tracking-tight text-white">
-			<span class="text-emerald-400">Git</span>Folio
+			xjmzx.github.io
 		</span>
 		{#if user}
 			<a
@@ -71,17 +71,17 @@
 	</nav>
 
 	{#if loading}
-		<div class="flex flex-col items-center justify-center py-32 gap-4">
+		<div class="flex flex-col items-center justify-center py-20 gap-4">
 			<div class="w-10 h-10 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin"></div>
 		</div>
 	{:else if user}
 		<!-- Contact & Info -->
 		<section class="px-4 pt-12 pb-8 max-w-2xl mx-auto w-full">
 			<!-- Get in Touch -->
-			<div class="rounded-2xl border border-white/8 bg-white/3 p-6 mb-6">
-				<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">Get in Touch</h2>
-				<div class="flex items-center gap-4 mb-4">
-					<img src={user.avatar_url} alt={user.login} class="w-12 h-12 rounded-lg ring-2 ring-white/10" />
+			<div class="rounded-sm border border-white/8 bg-white/3 p-4 mb-3">
+				<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3">Get in Touch</h2>
+				<div class="flex items-center gap-4 mb-3">
+					<img src={user.avatar_url} alt={user.login} class="w-12 h-12 rounded-sm ring-2 ring-white/10" />
 					<div>
 						<div class="font-semibold text-white">{user.name ?? user.login}</div>
 						<a href={user.html_url} target="_blank" rel="noopener" class="text-sm text-white/50 hover:text-white">@{user.login}</a>
@@ -93,7 +93,7 @@
 							href={user.blog.startsWith('http') ? user.blog : `https://${user.blog}`}
 							target="_blank"
 							rel="noopener"
-							class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
+							class="flex items-center gap-2 px-3 py-1.5 rounded-sm bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
 						>
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -106,7 +106,7 @@
 							href={`https://twitter.com/${user.twitter_username}`}
 							target="_blank"
 							rel="noopener"
-							class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
+							class="flex items-center gap-2 px-3 py-1.5 rounded-sm bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
 						>
 							<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
 								<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -118,7 +118,7 @@
 						href={user.html_url}
 						target="_blank"
 						rel="noopener"
-						class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
+						class="flex items-center gap-2 px-3 py-1.5 rounded-sm bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
 					>
 						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
 							<path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
@@ -129,7 +129,7 @@
 						href="https://gist.githubusercontent.com/xjmzx/2dcedf40a54d41d9af8ae1680f2da9d9"
 						target="_blank"
 						rel="noopener"
-						class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
+						class="flex items-center gap-2 px-3 py-1.5 rounded-sm bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
 					>
 						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
 							<path d="M12 0C5.37 0 0 5.37 0 12c0 6.63 5.37 12 12 12s12-5.37 12-12S18.63 0 12 0zm0 22c-5.52 0-10-4.48-10-10S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z"/>
@@ -140,16 +140,16 @@
 			</div>
 
 			<!-- Stats -->
-			<div class="grid grid-cols-3 gap-3 mb-6">
-				<div class="rounded-xl border border-white/8 bg-white/3 p-4 text-center">
+			<div class="grid grid-cols-3 gap-3 mb-3">
+				<div class="rounded-sm border border-white/8 bg-white/3 p-4 text-center">
 					<div class="text-2xl font-bold text-white">{user.public_repos}</div>
 					<div class="text-xs text-white/40 mt-1">Repos</div>
 				</div>
-				<div class="rounded-xl border border-white/8 bg-white/3 p-4 text-center">
+				<div class="rounded-sm border border-white/8 bg-white/3 p-4 text-center">
 					<div class="text-2xl font-bold text-white">{user.followers}</div>
 					<div class="text-xs text-white/40 mt-1">Followers</div>
 				</div>
-				<div class="rounded-xl border border-white/8 bg-white/3 p-4 text-center">
+				<div class="rounded-sm border border-white/8 bg-white/3 p-4 text-center">
 					<div class="text-2xl font-bold text-white">{user.following}</div>
 					<div class="text-xs text-white/40 mt-1">Following</div>
 				</div>
@@ -159,8 +159,8 @@
 		<!-- Recently Updated -->
 		{#if repos.length > 0}
 			<section class="px-4 pb-8 max-w-2xl mx-auto w-full">
-				<div class="rounded-2xl border border-white/8 bg-white/3 p-6">
-					<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">Recent Activity</h2>
+				<div class="rounded-sm border border-white/8 bg-white/3 p-4">
+					<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3">Recent Activity</h2>
 					<div class="flex flex-col gap-3">
 						{#each repos as repo}
 							<a
@@ -195,8 +195,8 @@
 		<!-- Background / Details -->
 		{#if user.location || user.company}
 			<section class="px-4 pb-16 max-w-2xl mx-auto w-full">
-				<div class="rounded-2xl border border-white/8 bg-white/3 p-6">
-					<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">Background</h2>
+				<div class="rounded-sm border border-white/8 bg-white/3 p-4">
+					<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3">Background</h2>
 					<div class="flex flex-col gap-3">
 						{#if user.location}
 							<div class="flex items-center gap-3 text-white/70">
@@ -219,7 +219,7 @@
 			</section>
 		{/if}
 	{:else}
-		<section class="flex flex-col items-center justify-center px-4 pt-20 pb-12 text-center">
+		<section class="flex flex-col items-center justify-center px-4 pt-12 pb-8 text-center">
 			<p class="text-white/50">User not found</p>
 		</section>
 	{/if}
