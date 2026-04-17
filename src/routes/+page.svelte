@@ -9,18 +9,40 @@
 		public_repos: number; followers: number; following: number;
 	};
 
+	type GHRepo = {
+		name: string; html_url: string; language: string | null;
+		updated_at: string; description: string | null;
+		stargazers_count: number; forks_count: number;
+	};
+
 	const FEATURED_USER = 'xjmzx';
 
 	let user = $state<GHUser | null>(null);
+	let repos = $state<GHRepo[]>([]);
 	let loading = $state(true);
 
 	onMount(async () => {
 		try {
-			const res = await fetch(`https://api.github.com/users/${FEATURED_USER}`);
-			if (res.ok) user = await res.json();
+			const [userRes, reposRes] = await Promise.all([
+				fetch(`https://api.github.com/users/${FEATURED_USER}`),
+				fetch(`https://api.github.com/users/${FEATURED_USER}/repos?sort=updated&per_page=6`)
+			]);
+			if (userRes.ok) user = await userRes.json();
+			if (reposRes.ok) repos = await reposRes.json();
 		} catch { /* ignore */ }
 		loading = false;
 	});
+
+	function formatDate(dateStr: string) {
+		const d = new Date(dateStr);
+		const now = new Date();
+		const days = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+		if (days === 0) return 'today';
+		if (days === 1) return 'yesterday';
+		if (days < 7) return `${days} days ago`;
+		if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+		return `${Math.floor(days / 30)} months ago`;
+	}
 </script>
 
 <svelte:head>
@@ -53,30 +75,25 @@
 			<div class="w-10 h-10 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin"></div>
 		</div>
 	{:else if user}
-		<!-- Profile Hero -->
-		<section class="flex flex-col items-center justify-center px-4 pt-20 pb-12 text-center">
-			<img src={user.avatar_url} alt={user.login} class="w-28 h-28 rounded-2xl ring-4 ring-white/10 mb-6" />
-			<h1 class="text-4xl font-bold mb-2">{user.name ?? user.login}</h1>
-			<a href={user.html_url} target="_blank" rel="noopener" class="text-white/50 hover:text-white transition-colors mb-4">
-				@{user.login}
-			</a>
-			{#if user.bio}
-				<p class="text-lg text-white/60 max-w-xl mb-6">{user.bio}</p>
-			{/if}
-		</section>
-
 		<!-- Contact & Info -->
-		<section class="px-4 pb-16 max-w-2xl mx-auto w-full">
-			<!-- Contact Section -->
+		<section class="px-4 pt-12 pb-8 max-w-2xl mx-auto w-full">
+			<!-- Get in Touch -->
 			<div class="rounded-2xl border border-white/8 bg-white/3 p-6 mb-6">
 				<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">Get in Touch</h2>
-				<div class="flex flex-wrap gap-4 justify-center">
+				<div class="flex items-center gap-4 mb-4">
+					<img src={user.avatar_url} alt={user.login} class="w-12 h-12 rounded-lg ring-2 ring-white/10" />
+					<div>
+						<div class="font-semibold text-white">{user.name ?? user.login}</div>
+						<a href={user.html_url} target="_blank" rel="noopener" class="text-sm text-white/50 hover:text-white">@{user.login}</a>
+					</div>
+				</div>
+				<div class="flex flex-wrap gap-3 justify-start">
 					{#if user.blog}
 						<a
 							href={user.blog.startsWith('http') ? user.blog : `https://${user.blog}`}
 							target="_blank"
 							rel="noopener"
-							class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
+							class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
 						>
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -89,7 +106,7 @@
 							href={`https://twitter.com/${user.twitter_username}`}
 							target="_blank"
 							rel="noopener"
-							class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
+							class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
 						>
 							<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
 								<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -101,77 +118,31 @@
 						href={user.html_url}
 						target="_blank"
 						rel="noopener"
-						class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
+						class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
 					>
 						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
 							<path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
 						</svg>
 						GitHub
 					</a>
+					<a
+						href="https://gist.githubusercontent.com/xjmzx/2dcedf40a54d41d9af8ae1680f2da9d9"
+						target="_blank"
+						rel="noopener"
+						class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
+					>
+						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+							<path d="M12 0C5.37 0 0 5.37 0 12c0 6.63 5.37 12 12 12s12-5.37 12-12S18.63 0 12 0zm0 22c-5.52 0-10-4.48-10-10S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z"/>
+						</svg>
+						Nostr
+					</a>
 				</div>
 			</div>
 
 			<!-- Stats -->
-			<div class="grid grid-cols-3 gap-3">
-			<div class="rounded-2xl border border-white/8 bg-white/3 p-6">
-				<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">Nostr</h2>
-				<div class="flex flex-wrap gap-4 justify-center">
-					<a
-						href="https://gist.githubusercontent.com/xjmzx/2dcedf40a54d41d9af8ae1680f2da9d9"
-						target="_blank"
-						rel="noopener"
-						class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
-					>
-						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-							<path d="M12 0C5.37 0 0 5.37 0 12c0 6.63 5.37 12 12 12s12-5.37 12-12S18.63 0 12 0zm0 22c-5.52 0-10-4.48-10-10S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z"/>
-						</svg>
-						Verify via Gist
-					</a>
-					<span class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-mono text-white/50 text-xs">
-						npub1qythmm8eu0n68
-					</span>
-				</div>
-			</div>
+			<div class="grid grid-cols-3 gap-3 mb-6">
 				<div class="rounded-xl border border-white/8 bg-white/3 p-4 text-center">
-			<div class="rounded-2xl border border-white/8 bg-white/3 p-6">
-				<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">Nostr</h2>
-				<div class="flex flex-wrap gap-4 justify-center">
-					<a
-						href="https://gist.githubusercontent.com/xjmzx/2dcedf40a54d41d9af8ae1680f2da9d9"
-						target="_blank"
-						rel="noopener"
-						class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
-					>
-						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-							<path d="M12 0C5.37 0 0 5.37 0 12c0 6.63 5.37 12 12 12s12-5.37 12-12S18.63 0 12 0zm0 22c-5.52 0-10-4.48-10-10S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z"/>
-						</svg>
-						Verify via Gist
-					</a>
-					<span class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-mono text-white/50 text-xs">
-						npub1qythmm8eu0n68
-					</span>
-				</div>
-			</div>
 					<div class="text-2xl font-bold text-white">{user.public_repos}</div>
-			<div class="rounded-2xl border border-white/8 bg-white/3 p-6">
-				<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">Nostr</h2>
-				<div class="flex flex-wrap gap-4 justify-center">
-					<a
-						href="https://gist.githubusercontent.com/xjmzx/2dcedf40a54d41d9af8ae1680f2da9d9"
-						target="_blank"
-						rel="noopener"
-						class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all text-sm"
-					>
-						<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-							<path d="M12 0C5.37 0 0 5.37 0 12c0 6.63 5.37 12 12 12s12-5.37 12-12S18.63 0 12 0zm0 22c-5.52 0-10-4.48-10-10S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z"/>
-						</svg>
-						Verify via Gist
-					</a>
-					<span class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-mono text-white/50 text-xs">
-						npub1qythmm8eu0n68
-					</span>
-				</div>
-			</div>
 					<div class="text-xs text-white/40 mt-1">Repos</div>
 				</div>
 				<div class="rounded-xl border border-white/8 bg-white/3 p-4 text-center">
@@ -184,6 +155,42 @@
 				</div>
 			</div>
 		</section>
+
+		<!-- Recently Updated -->
+		{#if repos.length > 0}
+			<section class="px-4 pb-8 max-w-2xl mx-auto w-full">
+				<div class="rounded-2xl border border-white/8 bg-white/3 p-6">
+					<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">Recent Activity</h2>
+					<div class="flex flex-col gap-3">
+						{#each repos as repo}
+							<a
+								href={repo.html_url}
+								target="_blank"
+								rel="noopener"
+								class="block group"
+							>
+								<div class="flex items-start justify-between gap-3">
+									<div class="flex-1 min-w-0">
+										<div class="font-medium text-white group-hover:text-emerald-400 transition-colors truncate">
+											{repo.name}
+										</div>
+										{#if repo.description}
+											<div class="text-sm text-white/50 truncate mt-0.5">{repo.description}</div>
+										{/if}
+									</div>
+									<div class="flex flex-col items-end gap-1 shrink-0">
+										{#if repo.language}
+											<span class="text-xs px-2 py-0.5 rounded bg-white/5 text-white/60">{repo.language}</span>
+										{/if}
+										<span class="text-xs text-white/30">{formatDate(repo.updated_at)}</span>
+									</div>
+								</div>
+							</a>
+						{/each}
+					</div>
+				</div>
+			</section>
+		{/if}
 
 		<!-- Background / Details -->
 		{#if user.location || user.company}
