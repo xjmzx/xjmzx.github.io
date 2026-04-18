@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { base } from '$app/paths';
 
 	type GHUser = {
 		login: string; name: string | null; avatar_url: string;
@@ -238,7 +239,7 @@
 
 	<footer class="text-center text-sm text-white/25 pb-6">
 		<a href="https://svelte.dev" class="inline-flex items-center gap-2 hover:text-white/50 transition-colors">
-			<img src="/svelte1.png" alt="Svelte" class="h-4 w-4 opacity-40 hover:opacity-70 transition-opacity" />
+			<img src="{base}/svelte1.png" alt="Svelte" class="h-4 w-4 opacity-40 hover:opacity-70 transition-opacity" />
 			Built with Svelte
 		</a>
 	</footer>
