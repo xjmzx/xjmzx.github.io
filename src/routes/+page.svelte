@@ -19,16 +19,19 @@
 
 	let user = $state<GHUser | null>(null);
 	let repos = $state<GHRepo[]>([]);
+	let readme = $state<string | null>(null);
 	let loading = $state(true);
 
 	onMount(async () => {
 		try {
-			const [userRes, reposRes] = await Promise.all([
+			const [userRes, reposRes, readmeRes] = await Promise.all([
 				fetch(`https://api.github.com/users/${FEATURED_USER}`),
-				fetch(`https://api.github.com/users/${FEATURED_USER}/repos?sort=updated&per_page=6`)
+				fetch(`https://api.github.com/users/${FEATURED_USER}/repos?sort=updated&per_page=5`),
+				fetch(`https://raw.githubusercontent.com/${FEATURED_USER}/${FEATURED_USER}/main/README.md`)
 			]);
 			if (userRes.ok) user = await userRes.json();
 			if (reposRes.ok) repos = await reposRes.json();
+			if (readmeRes.ok) readme = await readmeRes.text();
 		} catch { /* ignore */ }
 		loading = false;
 	});
@@ -224,7 +227,19 @@
 		</section>
 	{/if}
 
+	{#if readme}
+		<section class="px-4 pb-8 max-w-2xl mx-auto w-full">
+			<div class="rounded-sm border border-white/8 bg-white/3 p-4">
+				<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3">About</h2>
+				<div class="prose prose-invert prose-sm max-w-none text-white/70 whitespace-pre-wrap text-sm leading-relaxed">{readme}</div>
+			</div>
+		</section>
+	{/if}
+
 	<footer class="text-center text-sm text-white/25 pb-6">
-		<a href="https://svelte.dev" class="hover:text-white/50 transition-colors">Built with Svelte</a>
+		<a href="https://svelte.dev" class="inline-flex items-center gap-2 hover:text-white/50 transition-colors">
+			<img src="/svelte1.png" alt="Svelte" class="h-4 w-4 opacity-40 hover:opacity-70 transition-opacity" />
+			Built with Svelte
+		</a>
 	</footer>
 </main>
