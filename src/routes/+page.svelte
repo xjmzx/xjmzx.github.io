@@ -27,6 +27,14 @@
 		detail: string | null; created_at: string; count?: number;
 	};
 
+	type LangSlice = { name: string; pct: number };
+
+	type RepoDetail = {
+		name: string; full: string; owner: string; html_url: string;
+		description: string | null; stargazers_count: number; forks_count: number;
+		updated_at: string | null; langs: LangSlice[]; external: boolean;
+	};
+
 	const FEATURED_USER = 'xjmzx';
 
 	// GitHub-style language colours (fallback → accent-neutral grey)
@@ -35,15 +43,20 @@
 		Svelte: '#ff3e00', Python: '#3572A5', Shell: '#89e051',
 		HTML: '#e34c26', CSS: '#563d7c', Go: '#00ADD8', C: '#555555',
 		'C++': '#f34b7d', Vue: '#41b883', Ruby: '#701516', Java: '#b07219',
-		Swift: '#F05138', Kotlin: '#A97BFF', Nix: '#7e7eff', Dockerfile: '#384d54'
+		Swift: '#F05138', Kotlin: '#A97BFF', Nix: '#7e7eff', Dockerfile: '#384d54',
+		Makefile: '#427819', SCSS: '#c6538c', SCSS_: '#c6538c', PLpgSQL: '#336790',
+		Astro: '#ff5a03', MDX: '#fcb32c', Just: '#384d54', TOML: '#9c4221'
 	};
 	const langColor = (l: string) => LANG_COLORS[l] ?? '#8b949e';
 
 	let user = $state<GHUser | null>(null);
 	let repos = $state<GHRepo[]>([]);
 	let events = $state<GHEvent[]>([]);
+	let activeDetails = $state<RepoDetail[]>([]);
+	let siteDetail = $state<RepoDetail | null>(null);
 	let loading = $state(true);
 	let showAll = $state(false);
+	let rateLimited = $state(false);
 
 	const totalStars = $derived(repos.reduce((a, r) => a + r.stargazers_count, 0));
 
@@ -57,7 +70,7 @@
 			.map(([name, n]) => ({ name, pct: total ? (n / total) * 100 : 0 }));
 	});
 
-	const visibleRepos = $derived(showAll ? repos : repos.slice(0, 9));
+	const visibleRepos = $derived(showAll ? repos : repos.slice(0, 6));
 
 	const activity = $derived.by(() => {
 		const out: Activity[] = [];
@@ -84,11 +97,75 @@
 				fetch(`https://api.github.com/users/${FEATURED_USER}/events/public?per_page=30`)
 			]);
 			if (userRes.ok) user = await userRes.json();
+			else if (userRes.status === 403) rateLimited = true;
 			if (reposRes.ok) repos = await reposRes.json();
 			if (eventsRes.ok) events = await eventsRes.json();
 		} catch { /* ignore — offline / rate-limited */ }
 		loading = false;
+
+		// Second pass: background + per-repo language detail for the repos that
+		// appear in Recent Activity, plus this site's own Pages repo.
+		const login = user?.login;
+		if (!login) return;
+		const siteFull = `${login}/${login}.github.io`;
+		const seen = new Set<string>();
+		const actives: string[] = [];
+		for (const e of events) {
+			const full = e.repo?.name;
+			if (!full || full === siteFull || seen.has(full)) continue;
+			seen.add(full);
+			actives.push(full);
+			if (actives.length >= 2) break;
+		}
+		const results = await Promise.all([
+			loadRepoDetail(siteFull, login),
+			...actives.map((f) => loadRepoDetail(f, login))
+		]);
+		siteDetail = results[0];
+		activeDetails = results.slice(1).filter((d): d is RepoDetail => d !== null);
 	});
+
+	/** Language byte-breakdown for a repo → sorted percentage slices. */
+	async function fetchLangs(full: string): Promise<LangSlice[]> {
+		try {
+			const r = await fetch(`https://api.github.com/repos/${full}/languages`);
+			if (!r.ok) return [];
+			const data: Record<string, number> = await r.json();
+			const total = Object.values(data).reduce((a, b) => a + b, 0);
+			return Object.entries(data)
+				.sort((a, b) => b[1] - a[1])
+				.map(([name, bytes]) => ({ name, pct: total ? (bytes / total) * 100 : 0 }));
+		} catch { return []; }
+	}
+
+	/** Background detail for one repo. Own repos reuse the already-fetched list;
+	 *  external (e.g. starred) repos cost one extra call. */
+	async function loadRepoDetail(full: string, ownLogin: string): Promise<RepoDetail | null> {
+		const [owner, name] = full.split('/');
+		if (!owner || !name) return null;
+		const external = owner !== ownLogin;
+		let description: string | null = null;
+		let html_url = `https://github.com/${full}`;
+		let stars = 0, forks = 0;
+		let updated: string | null = null;
+
+		const own = external ? undefined : repos.find((r) => r.name === name);
+		if (own) {
+			description = own.description; html_url = own.html_url;
+			stars = own.stargazers_count; forks = own.forks_count; updated = own.updated_at;
+		} else {
+			try {
+				const r = await fetch(`https://api.github.com/repos/${full}`);
+				if (r.ok) {
+					const d = await r.json();
+					description = d.description; html_url = d.html_url;
+					stars = d.stargazers_count; forks = d.forks_count; updated = d.updated_at;
+				}
+			} catch { /* keep defaults */ }
+		}
+		const langs = await fetchLangs(full);
+		return { name, full, owner, html_url, description, stargazers_count: stars, forks_count: forks, updated_at: updated, langs, external };
+	}
 
 	function describe(e: GHEvent): Activity | null {
 		const repo = e.repo?.name?.split('/')[1] ?? e.repo?.name ?? '';
@@ -260,13 +337,13 @@
 				{/if}
 			</header>
 
-			<!-- Two columns: Projects + Recent activity -->
-			<div class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr] gap-4 items-start">
+			<!-- Two columns: Projects (compact) + Recent activity (tall, detailed) -->
+			<div class="grid grid-cols-1 md:grid-cols-[1fr_1.4fr] gap-4 items-start">
 
 				<!-- Projects -->
 				<section class="rounded-sm border border-white/8 bg-white/3 p-4">
 					<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3">Projects</h2>
-					<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+					<div class="grid grid-cols-1 gap-2.5">
 						{#each visibleRepos as repo}
 							<a href={repo.html_url} target="_blank" rel="noopener"
 								class="block rounded-sm border border-white/8 bg-white/3 p-3 hover:border-white/20 transition-all group">
@@ -300,7 +377,7 @@
 							</a>
 						{/each}
 					</div>
-					{#if repos.length > 9}
+					{#if repos.length > 6}
 						<div class="text-center mt-3">
 							<button onclick={() => (showAll = !showAll)}
 								class="text-xs text-white/60 hover:text-white border border-white/10 hover:border-white/20 rounded-sm px-3.5 py-1.5 transition-all">
@@ -331,10 +408,82 @@
 					{:else}
 						<p class="text-xs text-white/30">No recent public activity.</p>
 					{/if}
+
+					<!-- Background detail for the repos touched above -->
+					{#if activeDetails.length > 0}
+						<div class="mt-4 pt-4 border-t border-white/8">
+							<h3 class="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-2.5">In these repos</h3>
+							<div class="flex flex-col gap-2.5">
+								{#each activeDetails as d}
+									<div class="rounded-sm border border-white/8 bg-white/3 p-3">
+										<div class="flex items-start justify-between gap-2">
+											<a href={d.html_url} target="_blank" rel="noopener"
+												class="font-medium text-sm [color:var(--accent)] truncate hover:underline">{d.external ? d.full : d.name}</a>
+											<div class="flex items-center gap-2 shrink-0 text-[10px] text-white/30">
+												{#if d.external}<span class="px-1.5 py-0.5 rounded bg-white/5 text-white/40">starred</span>{/if}
+												{#if d.updated_at}<span>{rel(d.updated_at)}</span>{/if}
+											</div>
+										</div>
+										{#if d.description}<p class="text-xs text-white/50 mt-1 leading-snug">{d.description}</p>{/if}
+										{#if d.langs.length > 0}
+											<span class="flex h-1.5 rounded-full overflow-hidden bg-white/5 mt-2.5">
+												{#each d.langs.slice(0, 6) as l}<span style="width:{l.pct}%; background:{langColor(l.name)}"></span>{/each}
+											</span>
+											<div class="flex flex-wrap gap-x-2.5 gap-y-1 mt-1.5 text-[10px] text-white/45">
+												{#each d.langs.slice(0, 4) as l}
+													<span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full" style="background:{langColor(l.name)}"></span>{l.name} {Math.round(l.pct) || '<1'}%</span>
+												{/each}
+											</div>
+										{/if}
+										{#if d.stargazers_count > 0 || d.forks_count > 0}
+											<div class="flex items-center gap-3 mt-2 text-[10px] text-white/35">
+												{#if d.stargazers_count > 0}<span class="inline-flex items-center gap-0.5"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-3-5.3 3 1.1-6L3.4 9.4l6-.8z"/></svg>{d.stargazers_count}</span>{/if}
+												{#if d.forks_count > 0}<span class="inline-flex items-center gap-0.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path stroke-width="2" d="M6 8.5c0 4 6 3 6 7M18 8.5c0 4-6 3-6 7"/></svg>{d.forks_count}</span>{/if}
+											</div>
+										{/if}
+									</div>
+								{/each}
+							</div>
+						</div>
+					{/if}
 				</section>
 
 			</div>
+
+			<!-- Fixed detail box for this GitHub Pages site's own repo -->
+			{#if siteDetail}
+				<section class="rounded-sm border border-white/8 bg-white/3 p-4">
+					<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3">This Site</h2>
+					<div class="flex items-start justify-between gap-3 flex-wrap">
+						<div class="min-w-0">
+							<a href={siteDetail.html_url} target="_blank" rel="noopener"
+								class="font-medium text-sm [color:var(--accent)] hover:underline">{FEATURED_USER}.github.io</a>
+							<p class="text-xs text-white/50 mt-1 leading-snug">{siteDetail.description ?? 'This GitHub Pages site — live activity, projects and stats, built from the GitHub API.'}</p>
+						</div>
+						<a href={siteDetail.html_url} target="_blank" rel="noopener"
+							class="flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-white/5 border border-white/10 hover:border-white/20 transition-all text-xs text-white/70 shrink-0">
+							<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+							Source
+						</a>
+					</div>
+					{#if siteDetail.langs.length > 0}
+						<span class="flex h-1.5 rounded-full overflow-hidden bg-white/5 mt-3">
+							{#each siteDetail.langs.slice(0, 6) as l}<span style="width:{l.pct}%; background:{langColor(l.name)}"></span>{/each}
+						</span>
+						<div class="flex flex-wrap gap-x-3 gap-y-1 mt-1.5 text-[10px] text-white/45">
+							{#each siteDetail.langs.slice(0, 5) as l}
+								<span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full" style="background:{langColor(l.name)}"></span>{l.name} {Math.round(l.pct) || '<1'}%</span>
+							{/each}
+						</div>
+					{/if}
+				</section>
+			{/if}
 		</div>
+	{:else if rateLimited}
+		<section class="flex flex-col items-center justify-center px-4 pt-20 pb-8 text-center gap-2">
+			<p class="text-white/60">GitHub's API rate limit was reached.</p>
+			<p class="text-sm text-white/35">This page reads live data from the public GitHub API (60 requests/hour per IP, unauthenticated). Please try again in a few minutes.</p>
+		</section>
 	{:else}
 		<section class="flex flex-col items-center justify-center px-4 pt-12 pb-8 text-center">
 			<p class="text-white/50">User not found</p>
