@@ -268,10 +268,11 @@
 
 			<!-- Profile header + compact stat strip -->
 			<header class="rounded-sm border border-white/8 bg-white/3 p-4">
-				<div class="flex items-start gap-4 flex-wrap">
-					<img src={user.avatar_url} alt={user.login}
-						class="w-14 h-14 rounded-sm ring-2 ring-white/10 shrink-0" />
-					<div class="flex-1 min-w-0">
+				<div class="flex items-start gap-3 flex-wrap">
+					<div class="shrink-0 self-start rounded-sm border border-white/8 bg-white/5 p-2">
+						<img src={user.avatar_url} alt={user.login} class="w-14 h-14 rounded-sm" />
+					</div>
+					<div class="flex-1 min-w-0 self-start rounded-sm border border-white/8 bg-white/5 px-3 py-2">
 						<div class="font-semibold text-white text-lg leading-tight">{user.name ?? user.login}</div>
 						<a href={user.html_url} target="_blank" rel="noopener"
 							class="text-sm text-white/50 hover:text-white">@{user.login}</a>
@@ -312,7 +313,7 @@
 					{/if}
 
 					<!-- Compact stat strip -->
-					<div class="flex gap-4 shrink-0">
+					<div class="flex gap-4 shrink-0 self-start rounded-sm border border-white/8 bg-white/5 px-4 py-2">
 						<div class="text-center"><div class="text-lg font-bold text-white leading-none">{user.public_repos}</div><div class="text-[10px] text-white/40 mt-1 uppercase tracking-wide">Repos</div></div>
 						<div class="text-center"><div class="text-lg font-bold text-white leading-none">{user.followers}</div><div class="text-[10px] text-white/40 mt-1 uppercase tracking-wide">Followers</div></div>
 						<div class="text-center"><div class="text-lg font-bold text-white leading-none">{user.following}</div><div class="text-[10px] text-white/40 mt-1 uppercase tracking-wide">Following</div></div>
