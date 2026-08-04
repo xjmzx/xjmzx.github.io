@@ -277,10 +277,10 @@
 			<!-- Profile header + compact stat strip -->
 			<header class="rounded-sm border border-white/8 bg-white/3 p-4">
 				<div class="flex items-start gap-3 flex-wrap">
-					<div class="shrink-0 self-start rounded-sm border border-white/8 bg-white/5 p-2">
-						<img src={user.avatar_url} alt={user.login} class="w-14 h-14 rounded-sm" />
+					<div class="shrink-0 h-16 flex items-center justify-center rounded-sm border border-white/8 bg-white/5 px-2">
+						<img src={user.avatar_url} alt={user.login} class="w-12 h-12 rounded-sm" />
 					</div>
-					<div class="flex-1 min-w-0 self-start rounded-sm border border-white/8 bg-white/5 px-3 py-2">
+					<div class="flex-1 min-w-0 h-16 flex flex-col justify-center rounded-sm border border-white/8 bg-white/5 px-3">
 						<div class="font-semibold text-white text-lg leading-tight">{user.name ?? user.login}</div>
 						<a href={user.html_url} target="_blank" rel="noopener"
 							class="text-sm text-white/50 hover:text-white">@{user.login}</a>
@@ -304,7 +304,7 @@
 					</div>
 					<!-- Minimal "this site" chip -->
 					{#if siteRepo}
-						<div class="shrink-0 self-start rounded-sm border border-white/8 bg-white/5 px-3 py-2">
+						<div class="shrink-0 h-16 flex flex-col justify-center rounded-sm border border-white/8 bg-white/5 px-3">
 							<div class="text-[9px] uppercase tracking-wider text-white/35 mb-1">This site</div>
 							<a href={siteRepo.html_url} target="_blank" rel="noopener"
 								class="flex items-center gap-1.5 text-xs font-medium [color:var(--accent)] hover:underline">
@@ -321,7 +321,7 @@
 					{/if}
 
 					<!-- Compact stat strip -->
-					<div class="flex gap-4 shrink-0 self-start rounded-sm border border-white/8 bg-white/5 px-4 py-2">
+					<div class="flex gap-4 shrink-0 h-16 items-center rounded-sm border border-white/8 bg-white/5 px-4">
 						<div class="text-center"><div class="text-lg font-bold text-white leading-none">{user.public_repos}</div><div class="text-[10px] text-white/40 mt-1 uppercase tracking-wide">Repos</div></div>
 						<div class="text-center"><div class="text-lg font-bold text-white leading-none">{user.followers}</div><div class="text-[10px] text-white/40 mt-1 uppercase tracking-wide">Followers</div></div>
 						<div class="text-center"><div class="text-lg font-bold text-white leading-none">{user.following}</div><div class="text-[10px] text-white/40 mt-1 uppercase tracking-wide">Following</div></div>
@@ -331,20 +331,20 @@
 					<!-- Website + Nostr chips -->
 					{#if WEBSITE}
 						<a href={`https://${WEBSITE}`} target="_blank" rel="noopener"
-							class="shrink-0 self-start flex items-center gap-1.5 rounded-sm border border-white/8 bg-white/5 px-3 py-2 text-xs text-white/70 hover:border-white/20 hover:text-white transition-all">
+							class="shrink-0 h-16 flex items-center gap-1.5 rounded-sm border border-white/8 bg-white/5 px-3 text-xs text-white/70 hover:border-white/20 hover:text-white transition-all">
 							<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
 							{WEBSITE}
 						</a>
 					{/if}
 					{#if user.twitter_username}
 						<a href={`https://twitter.com/${user.twitter_username}`} target="_blank" rel="noopener"
-							class="shrink-0 self-start flex items-center gap-1.5 rounded-sm border border-white/8 bg-white/5 px-3 py-2 text-xs text-white/70 hover:border-white/20 hover:text-white transition-all">
+							class="shrink-0 h-16 flex items-center gap-1.5 rounded-sm border border-white/8 bg-white/5 px-3 text-xs text-white/70 hover:border-white/20 hover:text-white transition-all">
 							<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
 							Twitter
 						</a>
 					{/if}
 					<a href="https://gist.githubusercontent.com/xjmzx/2dcedf40a54d41d9af8ae1680f2da9d9" target="_blank" rel="noopener"
-						class="shrink-0 self-start flex items-center gap-1.5 rounded-sm border border-white/8 bg-white/5 px-3 py-2 text-xs text-white/70 hover:border-white/20 hover:text-white transition-all">
+						class="shrink-0 h-16 flex items-center gap-1.5 rounded-sm border border-white/8 bg-white/5 px-3 text-xs text-white/70 hover:border-white/20 hover:text-white transition-all">
 						<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 6.63 5.37 12 12 12s12-5.37 12-12S18.63 0 12 0zm0 22c-5.52 0-10-4.48-10-10S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z"/></svg>
 						Nostr
 					</a>
