@@ -49,16 +49,21 @@
 	};
 	const langColor = (l: string) => LANG_COLORS[l] ?? '#8b949e';
 
+	const SITE_REPO = `${FEATURED_USER}.github.io`;
+
 	let user = $state<GHUser | null>(null);
 	let repos = $state<GHRepo[]>([]);
 	let events = $state<GHEvent[]>([]);
 	let activeDetails = $state<RepoDetail[]>([]);
-	let siteDetail = $state<RepoDetail | null>(null);
 	let loading = $state(true);
 	let showAll = $state(false);
 	let rateLimited = $state(false);
 
 	const totalStars = $derived(repos.reduce((a, r) => a + r.stargazers_count, 0));
+
+	// This site's own Pages repo — shown minimally in the header, excluded elsewhere.
+	const siteRepo = $derived(repos.find((r) => r.name === SITE_REPO) ?? null);
+	const otherRepos = $derived(repos.filter((r) => r.name !== SITE_REPO));
 
 	const languages = $derived.by(() => {
 		const counts: Record<string, number> = {};
@@ -70,13 +75,14 @@
 			.map(([name, n]) => ({ name, pct: total ? (n / total) * 100 : 0 }));
 	});
 
-	const visibleRepos = $derived(showAll ? repos : repos.slice(0, 6));
+	const visibleRepos = $derived(showAll ? otherRepos : otherRepos.slice(0, 6));
 
 	const activity = $derived.by(() => {
 		const out: Activity[] = [];
 		for (const e of events) {
 			const a = describe(e);
 			if (!a) continue;
+			if (a.repo === SITE_REPO) continue; // this site's own repo lives in the header
 			// Collapse consecutive pushes to the same repo into one entry.
 			const prev = out[out.length - 1];
 			if (a.icon === 'commit' && prev?.icon === 'commit' && prev.repo === a.repo) {
@@ -104,10 +110,10 @@
 		loading = false;
 
 		// Second pass: background + per-repo language detail for the repos that
-		// appear in Recent Activity, plus this site's own Pages repo.
+		// appear in Recent Activity (the site's own repo is excluded — it's in the header).
 		const login = user?.login;
 		if (!login) return;
-		const siteFull = `${login}/${login}.github.io`;
+		const siteFull = `${login}/${SITE_REPO}`;
 		const seen = new Set<string>();
 		const actives: string[] = [];
 		for (const e of events) {
@@ -117,12 +123,8 @@
 			actives.push(full);
 			if (actives.length >= 2) break;
 		}
-		const results = await Promise.all([
-			loadRepoDetail(siteFull, login),
-			...actives.map((f) => loadRepoDetail(f, login))
-		]);
-		siteDetail = results[0];
-		activeDetails = results.slice(1).filter((d): d is RepoDetail => d !== null);
+		const results = await Promise.all(actives.map((f) => loadRepoDetail(f, login)));
+		activeDetails = results.filter((d): d is RepoDetail => d !== null);
 	});
 
 	/** Language byte-breakdown for a repo → sorted percentage slices. */
@@ -291,6 +293,24 @@
 							</div>
 						{/if}
 					</div>
+					<!-- Minimal "this site" chip -->
+					{#if siteRepo}
+						<div class="shrink-0 self-start rounded-sm border border-white/8 bg-white/5 px-3 py-2">
+							<div class="text-[9px] uppercase tracking-wider text-white/35 mb-1">This site</div>
+							<a href={siteRepo.html_url} target="_blank" rel="noopener"
+								class="flex items-center gap-1.5 text-xs font-medium [color:var(--accent)] hover:underline">
+								{SITE_REPO}
+								<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+							</a>
+							{#if siteRepo.language}
+								<div class="flex items-center gap-1 mt-1 text-[10px] text-white/40">
+									<span class="w-1.5 h-1.5 rounded-full" style="background:{langColor(siteRepo.language)}"></span>
+									{siteRepo.language}
+								</div>
+							{/if}
+						</div>
+					{/if}
+
 					<!-- Compact stat strip -->
 					<div class="flex gap-4 shrink-0">
 						<div class="text-center"><div class="text-lg font-bold text-white leading-none">{user.public_repos}</div><div class="text-[10px] text-white/40 mt-1 uppercase tracking-wide">Repos</div></div>
@@ -377,11 +397,11 @@
 							</a>
 						{/each}
 					</div>
-					{#if repos.length > 6}
+					{#if otherRepos.length > 6}
 						<div class="text-center mt-3">
 							<button onclick={() => (showAll = !showAll)}
 								class="text-xs text-white/60 hover:text-white border border-white/10 hover:border-white/20 rounded-sm px-3.5 py-1.5 transition-all">
-								{showAll ? 'Show fewer' : `Show all ${repos.length} repos`}
+								{showAll ? 'Show fewer' : `Show all ${otherRepos.length} repos`}
 							</button>
 						</div>
 					{/if}
@@ -449,35 +469,6 @@
 				</section>
 
 			</div>
-
-			<!-- Fixed detail box for this GitHub Pages site's own repo -->
-			{#if siteDetail}
-				<section class="rounded-sm border border-white/8 bg-white/3 p-4">
-					<h2 class="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3">This Site</h2>
-					<div class="flex items-start justify-between gap-3 flex-wrap">
-						<div class="min-w-0">
-							<a href={siteDetail.html_url} target="_blank" rel="noopener"
-								class="font-medium text-sm [color:var(--accent)] hover:underline">{FEATURED_USER}.github.io</a>
-							<p class="text-xs text-white/50 mt-1 leading-snug">{siteDetail.description ?? 'This GitHub Pages site — live activity, projects and stats, built from the GitHub API.'}</p>
-						</div>
-						<a href={siteDetail.html_url} target="_blank" rel="noopener"
-							class="flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-white/5 border border-white/10 hover:border-white/20 transition-all text-xs text-white/70 shrink-0">
-							<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-							Source
-						</a>
-					</div>
-					{#if siteDetail.langs.length > 0}
-						<span class="flex h-1.5 rounded-full overflow-hidden bg-white/5 mt-3">
-							{#each siteDetail.langs.slice(0, 6) as l}<span style="width:{l.pct}%; background:{langColor(l.name)}"></span>{/each}
-						</span>
-						<div class="flex flex-wrap gap-x-3 gap-y-1 mt-1.5 text-[10px] text-white/45">
-							{#each siteDetail.langs.slice(0, 5) as l}
-								<span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full" style="background:{langColor(l.name)}"></span>{l.name} {Math.round(l.pct) || '<1'}%</span>
-							{/each}
-						</div>
-					{/if}
-				</section>
-			{/if}
 		</div>
 	{:else if rateLimited}
 		<section class="flex flex-col items-center justify-center px-4 pt-20 pb-8 text-center gap-2">
