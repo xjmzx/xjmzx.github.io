@@ -51,6 +51,14 @@
 
 	const SITE_REPO = `${FEATURED_USER}.github.io`;
 
+	// External website per account (GitHub's `blog` field just points back here).
+	const EXTERNAL_SITES: Record<string, string> = {
+		adjmx: 'fizx.uk',
+		'macos-node': 'upleb.uk',
+		xjmzx: 'xjmzx.github.io'
+	};
+	const WEBSITE = EXTERNAL_SITES[FEATURED_USER] ?? '';
+
 	let user = $state<GHUser | null>(null);
 	let repos = $state<GHRepo[]>([]);
 	let events = $state<GHEvent[]>([]);
@@ -319,34 +327,32 @@
 						<div class="text-center"><div class="text-lg font-bold text-white leading-none">{user.following}</div><div class="text-[10px] text-white/40 mt-1 uppercase tracking-wide">Following</div></div>
 						<div class="text-center"><div class="text-lg font-bold text-white leading-none">{totalStars}</div><div class="text-[10px] text-white/40 mt-1 uppercase tracking-wide">Stars</div></div>
 					</div>
-				</div>
 
-				<!-- Links -->
-				<div class="flex flex-wrap gap-2 mt-3 pt-3 border-t border-white/8">
-					{#if user.blog}
-						<a href={user.blog.startsWith('http') ? user.blog : `https://${user.blog}`} target="_blank" rel="noopener"
-							class="flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-white/5 border border-white/10 hover:border-white/20 transition-all text-xs text-white/70">
+					<!-- Website + Nostr chips -->
+					{#if WEBSITE}
+						<a href={`https://${WEBSITE}`} target="_blank" rel="noopener"
+							class="shrink-0 self-start flex items-center gap-1.5 rounded-sm border border-white/8 bg-white/5 px-3 py-2 text-xs text-white/70 hover:border-white/20 hover:text-white transition-all">
 							<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-							Website
+							{WEBSITE}
 						</a>
 					{/if}
 					{#if user.twitter_username}
 						<a href={`https://twitter.com/${user.twitter_username}`} target="_blank" rel="noopener"
-							class="flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-white/5 border border-white/10 hover:border-white/20 transition-all text-xs text-white/70">
+							class="shrink-0 self-start flex items-center gap-1.5 rounded-sm border border-white/8 bg-white/5 px-3 py-2 text-xs text-white/70 hover:border-white/20 hover:text-white transition-all">
 							<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
 							Twitter
 						</a>
 					{/if}
 					<a href="https://gist.githubusercontent.com/xjmzx/2dcedf40a54d41d9af8ae1680f2da9d9" target="_blank" rel="noopener"
-						class="flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-white/5 border border-white/10 hover:border-white/20 transition-all text-xs text-white/70">
+						class="shrink-0 self-start flex items-center gap-1.5 rounded-sm border border-white/8 bg-white/5 px-3 py-2 text-xs text-white/70 hover:border-white/20 hover:text-white transition-all">
 						<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 6.63 5.37 12 12 12s12-5.37 12-12S18.63 0 12 0zm0 22c-5.52 0-10-4.48-10-10S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z"/></svg>
 						Nostr
 					</a>
 				</div>
 
-				<!-- Languages bar -->
+				<!-- Languages bar (alone, under the divider) -->
 				{#if languages.length > 0}
-					<div class="flex items-center gap-2 mt-3 text-xs">
+					<div class="flex items-center gap-2 mt-3 pt-3 border-t border-white/8 text-xs">
 						<span class="text-white/30 shrink-0">Languages</span>
 						<span class="flex-1 h-2 rounded-full overflow-hidden flex bg-white/5">
 							{#each languages as l}
